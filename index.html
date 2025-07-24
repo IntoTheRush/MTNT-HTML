@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script type="module" crossorigin="true"
+    src="https://mint.highlight.xyz/assets/embed.js?v=1"
+    id="highlight-embed-script"
+    data-embed-version="2.0"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mutant Records Store</title>
-  <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1" id="highlight-embed-script" data-embed-version="2.0"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papLF++zUtNp2mUzU0iyEl4JRWceN4NshlZfFEbHz7dkcE+aTQ6+l4HgZyQKN0+omw61mtLEArE6C6YlYHYQZg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     * {
       margin: 0;
@@ -15,15 +18,42 @@
     }
 
     body {
-      background-color: #111;
+      background-color: #000;
       color: #fff;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #000;
+      padding-top: 20px;
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding-left: 1rem;
+    }
+
+    .sidebar a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+
+    .main-content {
+      margin-left: 200px;
+      width: 100%;
+      background-color: #000;
     }
 
     .navbar {
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.7);
+      background-color: #000;
       padding: 1rem 2rem;
       position: absolute;
       top: 0;
@@ -32,7 +62,7 @@
     }
 
     .navbar a {
-      color: #66ff00;
+      color: #ffffff;
       margin-left: 1.5rem;
       text-decoration: none;
       font-size: 1.5rem;
@@ -51,37 +81,21 @@
       background-size: cover;
       background-position: center;
       position: relative;
+      border-top: 20px solid transparent;
     }
 
-    .header-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: left;
-      justify-content: center;
-    }
-
-    .header-overlay h1 {
-      font-size: 2.5rem;
-      color: #FFFFFF;
-      text-align: Left;
-    }
-
-    .mint-section {
+    section {
       padding: 2rem;
       max-width: 1200px;
       margin: 0 auto;
-      background-color: #000000;
+      background-color: #000;
     }
 
     h2 {
       font-size: 2rem;
       margin-bottom: 1rem;
       text-align: center;
+      color: #ffffff;
     }
 
     .mint-card-container {
@@ -94,36 +108,197 @@
     .mint-card {
       width: 300px;
     }
+
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .artist-card {
+      min-width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      background-color: #000;
+      padding: 1rem;
+      border-radius: 10px;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .artist-card img {
+      width: 200px;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .artist-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .artist-socials a {
+      margin-right: 1rem;
+      font-size: 1.5rem;
+      color: #66ff00;
+    }
+
+    .carousel-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+
+    .carousel-buttons button {
+      background-color: #222;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div class="navbar">
-      <a href="https://x.com/Mutant_Records" target="_blank">
-        <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" style="width: 24px; height: 24px;">
-      </a>
-      <a href="/" target="_self">
-        <i class="fas fa-home"></i>
-      </a>
-      <a href="https://t.co/RJbIdCpeiY" target="_blank">
-        <img src="https://cdn-icons-png.flaticon.com/512/3670/3670157.png" alt="Discord" style="width: 24px; height: 24px;">
-      </a>
-    </div>
-    <div class="header-overlay">
-      <h1></h1>
-    </div>
-  </header>
+  <div class="sidebar">
+    <a href="#home">Home</a>
+    <a href="#artists">Artists</a>
+    <a href="#mints">Mints</a>
+    <a href="#impressum">Impressum</a>
+  </div>
 
-  <section class="mint-section">
-    <h2>New Releases</h2>
-    <div class="mint-card-container">
-      <div class="mint-card">
-        <div data-widget="highlight-mint-card" 
-             data-mint-collection-id="687c37d010dbc9335fa31a05" 
-             data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+  <div class="main-content">
+    <header>
+      <div class="navbar">
+        <a href="https://x.com/Mutant_Records" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" style="width: 24px; height: 24px;">
+        </a>
+        <a href="/" target="_self">
+          <i class="fas fa-home"></i>
+        </a>
+        <a href="https://t.co/RJbIdCpeiY" target="_blank">
+          <img src="https://cdn-icons-png.flaticon.com/512/3670/3670157.png" alt="Discord" style="width: 24px; height: 24px;">
+        </a>
       </div>
-      <!-- You can copy and paste the block above to add more mint cards -->
-    </div>
-  </section>
+    </header>
+
+    <section id="mints">
+      <h2>Mint Section</h2>
+      <div class="mint-card-container">
+        <div class="mint-card">
+          <div data-widget="highlight-mint-card" 
+               data-mint-collection-id="687c37d010dbc9335fa31a05" 
+               data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="artists">
+      <h2>Artists</h2>
+      <div class="carousel">
+        <div class="carousel-track">
+          <div class="artist-card">
+            <img src="/mnt/data/5733_vinyl-record (1).png" alt="NaNa The Ape">
+            <div class="artist-info">
+              <h3>NaNa The Ape</h3>
+              <div class="mint-card">
+                <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+              </div>
+              <div class="artist-socials">
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+                <a href="#"><i class="fab fa-spotify"></i></a>
+                <a href="#"><i class="fab fa-apple"></i></a>
+                <a href="#"><i class="fab fa-soundcloud"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+              </div>
+            </div>
+          </div>
+          <div class="artist-card">
+            <img src="https://via.placeholder.com/200x200" alt="Nicolas Mazeroi">
+            <div class="artist-info">
+              <h3>Nicolas Mazeroi</h3>
+              <div class="mint-card">
+                <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+              </div>
+              <div class="artist-socials">
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+                <a href="#"><i class="fab fa-spotify"></i></a>
+                <a href="#"><i class="fab fa-apple"></i></a>
+                <a href="#"><i class="fab fa-soundcloud"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+              </div>
+            </div>
+          </div>
+          <div class="artist-card">
+            <img src="https://via.placeholder.com/200x200" alt="Rick Starr">
+            <div class="artist-info">
+              <h3>Rick Starr</h3>
+              <div class="mint-card">
+                <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+              </div>
+              <div class="artist-socials">
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+                <a href="#"><i class="fab fa-spotify"></i></a>
+                <a href="#"><i class="fab fa-apple"></i></a>
+                <a href="#"><i class="fab fa-soundcloud"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+              </div>
+            </div>
+          </div>
+          <div class="artist-card">
+            <img src="https://via.placeholder.com/200x200" alt="ShananaNFT">
+            <div class="artist-info">
+              <h3>ShananaNFT</h3>
+              <div class="mint-card">
+                <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+              </div>
+              <div class="artist-socials">
+                <a href="#"><i class="fab fa-x-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-discord"></i></a>
+                <a href="#"><i class="fab fa-spotify"></i></a>
+                <a href="#"><i class="fab fa-apple"></i></a>
+                <a href="#"><i class="fab fa-soundcloud"></i></a>
+                <a href="#"><i class="fab fa-tiktok"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-buttons">
+          <button onclick="moveCarousel(-1)">&laquo; Prev</button>
+          <button onclick="moveCarousel(1)">Next &raquo;</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="impressum">
+      <h2>Impressum</h2>
+      <p>Legal disclosure and contact information will go here.</p>
+    </section>
+  </div>
+  <script>
+    let currentSlide = 0;
+    const track = document.querySelector('.carousel-track');
+    const slides = document.querySelectorAll('.artist-card');
+
+    function moveCarousel(direction) {
+      currentSlide = (currentSlide + direction + slides.length) % slides.length;
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+  </script>
 </body>
 </html>
+
