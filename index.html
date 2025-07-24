@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mutant Records Record Store</title>
+  <title>Modern Mint Webpage</title>
   <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1" id="highlight-embed-script" data-embed-version="2.0"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-papLF++zUtNp2mUzU0iyEl4JRWceN4NshlZfFEbHz7dkcE+aTQ6+l4HgZyQKN0+omw61mtLEArE6C6YlYHYQZg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     * {
       margin: 0;
@@ -16,6 +17,25 @@
     body {
       background-color: #111;
       color: #fff;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 1rem 2rem;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .navbar a {
+      color: #66ff00;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-size: 1.5rem;
     }
 
     header {
@@ -35,13 +55,13 @@
       height: 100%;
       background-color: rgba(0, 0, 0, 0.5);
       display: flex;
-      align-items: left;
-      justify-content: left;
+      align-items: center;
+      justify-content: center;
     }
 
     .header-overlay h1 {
       font-size: 2.5rem;
-      color: #FFFFFF;
+      color: #66ff00;
       text-align: center;
     }
 
@@ -71,8 +91,13 @@
 </head>
 <body>
   <header>
+    <div class="navbar">
+      <a href="https://x.com/Mutant_Records" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="/" target="_self"><i class="fas fa-home"></i></a>
+      <a href="https://t.co/RJbIdCpeiY" target="_blank"><i class="fab fa-discord"></i></a>
+    </div>
     <div class="header-overlay">
-      <h1>Welcome to the home of Mutant Records</h1>
+      <h1>Welcome to Mutant Records</h1>
     </div>
   </header>
 
@@ -86,6 +111,10 @@
       </div>
       <!-- You can copy and paste the block above to add more mint cards -->
     </div>
+  </section>
+</body>
+</html>
+
   </section>
 </body>
 </html>
