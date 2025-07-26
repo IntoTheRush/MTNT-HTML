@@ -9,6 +9,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mutant Records Store</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -49,10 +51,6 @@
       align-items: center;
     }
 
-    .navbar a i {
-      margin-right: 0.5rem;
-    }
-
     header {
       width: 100%;
       height: 60vh;
@@ -88,65 +86,43 @@
       width: 300px;
     }
 
-    .carousel {
-      position: relative;
-      overflow: hidden;
+    .swiper-container {
       width: 100%;
-      display: block;
+      padding: 2rem 0;
     }
 
-    .carousel-track {
-      display: flex;
-      transition: transform 0.5s ease-in-out;
-    }
-
-    .artist-card {
-      min-width: 100%;
-      display: flex;
-      flex-wrap: wrap;
-      background-color: #000;
-      padding: 1rem;
-      border-radius: 10px;
-      gap: 2rem;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .artist-card img {
-      width: 200px;
-      height: auto;
-      border-radius: 10px;
-    }
-
-    .artist-info {
-      flex: 1;
+    .swiper-slide {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      align-items: center;
+      background: #111;
+      padding: 2rem;
+      border-radius: 10px;
     }
 
-    .artist-info p {
-      font-size: 1rem;
+    .swiper-slide img {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+
+    .swiper-slide p {
+      text-align: center;
+      max-width: 400px;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .swiper-slide .mint-card {
+      margin: 1rem 0;
     }
 
     .artist-socials a {
-      margin-right: 1rem;
-      font-size: 1.5rem;
       color: #66ff00;
-    }
-
-    .carousel-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1rem;
-    }
-
-    .carousel-buttons button {
-      background-color: #222;
-      color: #fff;
-      border: none;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
+      margin: 0 0.5rem;
+      font-size: 1.5rem;
     }
   </style>
 </head>
@@ -167,111 +143,86 @@
     </header>
 
     <section id="mints">
-      <h2>Mint Section</h2>
-      <div class="mint-card-container">
-        <div class="mint-card">
-          <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-        </div>
-        <div class="mint-card">
-          <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-        </div>
-      </div>
-    </section>
+  <h2>Mint Section</h2>
+  <div class="mint-card-container">
+    <div class="mint-card">
+      <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+    </div>
+    <div class="mint-card">
+      <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+    </div>
+  </div>
+</section>
 
     <section id="artists">
-      <h2>Artists</h2>
-      <div class="carousel">
-        <div class="carousel-track">
-          <div class="artist-card">
-            <img src="/mnt/data/nanatheape.png" alt="NaNa The Ape">
-            <div class="artist-info">
-              <h3>NaNa The Ape</h3>
-              <p>Pioneering mutant rapper blending digital rebellion and soul.</p>
-              <div class="artist-socials">
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-discord"></i></a>
-                <a href="#"><i class="fab fa-spotify"></i></a>
-                <a href="#"><i class="fab fa-apple"></i></a>
-                <a href="#"><i class="fab fa-soundcloud"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
-              </div>
+      <h2>🎨 Featured Artist</h2>
+      <div class="swiper-container">
+        $1
+          <div class="swiper-slide">
+            <img src="/mnt/data/5733_vinyl-record (1).png" alt="NaNa The Ape">
+<p>NaNa The Ape is a futuristic genre-bender and founder of the Mutant Records collective.</p>
+<div class="mint-card">
+  <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+</div>
+<div class="artist-socials">
+  <a href="https://spotify.com/nanatheape" target="_blank"><i class="fab fa-spotify"></i></a>
+  <a href="https://music.apple.com/artist/nanatheape" target="_blank"><i class="fab fa-apple"></i></a>
+  <a href="https://instagram.com/nanatheape" target="_blank"><i class="fab fa-instagram"></i></a>
+  <a href="https://tiktok.com/@nanatheape" target="_blank"><i class="fab fa-tiktok"></i></a>
+  <a href="https://x.com/nanatheape" target="_blank"><i class="fab fa-x-twitter"></i></a>
+</div>
+            </div>
+            <div class="artist-socials">
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
-          <div class="artist-card">
-            <img src="https://via.placeholder.com/200x200" alt="Nicolas Mazeroi">
-            <div class="artist-info">
-              <h3>Nicolas Mazeroi</h3>
-              <p>Electronic visionary merging retro synths with AI-generated rhythms.</p>
-              <div class="artist-socials">
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-discord"></i></a>
-                <a href="#"><i class="fab fa-spotify"></i></a>
-                <a href="#"><i class="fab fa-apple"></i></a>
-                <a href="#"><i class="fab fa-soundcloud"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
-              </div>
             </div>
-          </div>
-          <div class="artist-card">
-            <img src="https://via.placeholder.com/200x200" alt="Rick Starr">
-            <div class="artist-info">
-              <h3>Rick Starr</h3>
-              <p>Genre-bending producer mixing urban beats with space-age themes.</p>
-              <div class="artist-socials">
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-discord"></i></a>
-                <a href="#"><i class="fab fa-spotify"></i></a>
-                <a href="#"><i class="fab fa-apple"></i></a>
-                <a href="#"><i class="fab fa-soundcloud"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
-              </div>
-            </div>
-          </div>
-          <div class="artist-card">
-            <img src="https://via.placeholder.com/200x200" alt="ShananaNFT">
-            <div class="artist-info">
-              <h3>ShananaNFT</h3>
-              <p>Digital pop sensation born in the blockchain realm.</p>
-              <div class="artist-socials">
-                <a href="#"><i class="fab fa-x-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-discord"></i></a>
-                <a href="#"><i class="fab fa-spotify"></i></a>
-                <a href="#"><i class="fab fa-apple"></i></a>
-                <a href="#"><i class="fab fa-soundcloud"></i></a>
-                <a href="#"><i class="fab fa-tiktok"></i></a>
-              </div>
+            <div class="artist-socials">
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
         </div>
-        <div class="carousel-buttons">
-          <button onclick="moveCarousel(-1)" aria-label="Previous Slide">&laquo; Prev</button>
-          <button onclick="moveCarousel(1)" aria-label="Next Slide">Next &raquo;</button>
-        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
       </div>
     </section>
 
     <section id="impressum">
-      <h2>Impressum</h2>
+      <h2>Imprint</h2>
       <p>Legal disclosure and contact information will go here.</p>
     </section>
   </div>
 
   <script>
-    let currentSlide = 0;
-    const track = document.querySelector('.carousel-track');
-    const slides = document.querySelectorAll('.artist-card');
-
-    function moveCarousel(direction) {
-      currentSlide = (currentSlide + direction + slides.length) % slides.length;
-      track.style.transform = `translateX(-${currentSlide * 100}%)`;
-    }
+    var swiper = new Swiper('.swiper-container', {
+      slidesPerView: 1,
+      spaceBetween: 30,
+      loop: true,
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev'
+      },
+      autoplay: {
+        delay: 5000,
+      },
+    });
   </script>
 </body>
 </html>
+
 
 
 
