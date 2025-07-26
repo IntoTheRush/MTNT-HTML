@@ -89,6 +89,7 @@
     .swiper-container {
       width: 100%;
       padding: 2rem 0;
+      position: relative;
     }
 
     .swiper-slide {
@@ -124,6 +125,27 @@
       margin: 0 0.5rem;
       font-size: 1.5rem;
     }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+      position: static;
+      display: inline-block;
+      margin: 2rem 1rem 0;
+      font-size: 2rem;
+      color: #66ff00;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+      transform: scale(1.2);
+      color: #aaff00;
+    }
+
+    .carousel-controls {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -143,39 +165,55 @@
     </header>
 
     <section id="mints">
-  <h2>Mint Section</h2>
-  <div class="mint-card-container">
-    <div class="mint-card">
-      <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-    </div>
-    <div class="mint-card">
-      <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-    </div>
-  </div>
-</section>
+      <h2>Mint Section</h2>
+      <div class="mint-card-container">
+        <div class="mint-card">
+          <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+        </div>
+        <div class="mint-card">
+          <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
+        </div>
+      </div>
+    </section>
 
     <section id="artists">
-      <h2>🎨 Featured Artist</h2>
+      <h2>Featured Artist</h2>
       <div class="swiper-container">
-        $1
+        <div class="swiper-wrapper">
           <div class="swiper-slide">
-  <img src="/mnt/data/5733_vinyl-record (1).png" alt="NaNa The Ape">
-  <p>NaNa The Ape is a futuristic genre-bender and founder of the Mutant Records collective.</p>
-  <div class="mint-card">
-    <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-  </div>
-  
-</div>
+            <img src="artist1.jpg" alt="Jane Doe">
+            <p>Jane Doe is a digital surrealist blending technology and emotion in her expressive crypto art pieces.</p>
+            <div class="mint-card">
+              <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
             </div>
-            
+            <div class="artist-socials">
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
+            </div>
           </div>
+          <div class="swiper-slide">
+            <img src="/mnt/data/nanatheape.png" alt="NaNa The Ape">
+            <p>NaNa The Ape is a futuristic genre-bender and founder of the Mutant Records collective.</p>
+            <div class="mint-card">
+              <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
             </div>
-            
+            <div class="artist-socials">
+              <a href="https://spotify.com/nanatheape" target="_blank"><i class="fab fa-spotify"></i></a>
+              <a href="https://music.apple.com/artist/nanatheape" target="_blank"><i class="fab fa-apple"></i></a>
+              <a href="https://instagram.com/nanatheape" target="_blank"><i class="fab fa-instagram"></i></a>
+              <a href="https://tiktok.com/@nanatheape" target="_blank"><i class="fab fa-tiktok"></i></a>
+              <a href="https://x.com/nanatheape" target="_blank"><i class="fab fa-x-twitter"></i></a>
+            </div>
           </div>
         </div>
         <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
+        <div class="carousel-controls">
+          <div class="swiper-button-prev"><i class="fas fa-angle-left"></i></div>
+          <div class="swiper-button-next"><i class="fas fa-angle-right"></i></div>
+        </div>
       </div>
     </section>
 
@@ -205,5 +243,6 @@
   </script>
 </body>
 </html>
+
 
 
