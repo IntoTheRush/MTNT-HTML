@@ -87,27 +87,30 @@
     }
 
     .swiper-container {
-      width: 100%;
-      padding: 2rem 0;
-      position: relative;
-    }
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 0;
+  position: relative;
+}
 
     .swiper-slide {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #111;
-      padding: 2rem;
-      border-radius: 10px;
-    }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #111;
+  padding: 1rem;
+  border-radius: 10px;
+  max-height: 600px;
+}
 
     .swiper-slide img {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-    }
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
 
     .swiper-slide p {
       text-align: center;
@@ -117,8 +120,10 @@
     }
 
     .swiper-slide .mint-card {
-      margin: 1rem 0;
-    }
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 280px;
+}
 
     .artist-socials a {
       color: #66ff00;
@@ -146,7 +151,31 @@
     .carousel-controls {
       text-align: center;
     }
-  </style>
+  @media (max-width: 768px) {
+  .swiper-slide .mint-card {
+    max-width: 220px;
+  }
+  .swiper-container {
+    max-width: 90%;
+    padding: 1rem 0;
+  }
+  .swiper-slide {
+    padding: 1rem;
+  }
+  .swiper-slide img {
+    width: 80px;
+    height: 80px;
+  }
+  .swiper-slide p {
+    font-size: 0.9rem;
+  }
+  .swiper-button-next,
+  .swiper-button-prev {
+    font-size: 1.5rem;
+    margin: 1rem;
+  }
+}
+</style>
 </head>
 <body>
   <div class="main-content">
@@ -243,7 +272,6 @@
   </script>
 </body>
 </html>
-
 
 
 
