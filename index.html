@@ -3,280 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Mutant Records Store - Mint unique music NFTs and explore our artist catalog." />
-  <meta name="keywords" content="Mutant Records, music, NFTs, mint, Web3, artists, team" />
   <title>Mutant Records Store</title>
-  <link rel="icon" href="/favicon.ico" />
-
-  <!-- Styles & Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
     body {
       background-color: #000;
       color: #fff;
-    }
-
-    .main-content {
-      width: 100%;
-    }
-
-    .navbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      background-color: #000;
-      padding: 1rem 2rem;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      z-index: 10;
-    }
-
-    .navbar a {
-      color: #ffffff;
-      margin-left: 1.5rem;
-      text-decoration: none;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-    }
-
-    header {
-      width: 100%;
-      height: 60vh;
-      min-height: 400px;
-      background-image: url('background.png');
-      background-size: cover;
-      background-position: center;
-      position: relative;
-      border-top: 20px solid transparent;
-    }
-
-    section {
+      font-family: Arial, sans-serif;
+      text-align: center;
       padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
     }
-
-    h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      text-align: center;
-      color: #ffffff;
+    button {
+      padding: 0.75rem 1.5rem;
+      background-color: #66ff00;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
     }
-
-    .mint-card-container {
+    input {
+      padding: 0.5rem;
+      width: 250px;
+      margin-top: 1rem;
+    }
+    #badges {
       display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
       justify-content: center;
-    }
-
-    .mint-card {
-      width: 300px;
-    }
-
-    .swiper-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 2rem 0;
-    }
-
-    .swiper-slide {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #111;
-      padding: 1rem;
-      border-radius: 10px;
-      max-height: 600px;
-    }
-
-    .swiper-slide img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-    }
-
-    .swiper-slide p {
-      text-align: center;
-      max-width: 400px;
-      margin-bottom: 1rem;
-      color: #fff;
-    }
-
-    .artist-socials a {
-      color: #66ff00;
-      margin: 0 0.5rem;
-      font-size: 1.5rem;
-    }
-
-    .team-container {
-      display: flex;
       flex-wrap: wrap;
-      justify-content: center;
       gap: 2rem;
       margin-top: 2rem;
     }
-
-    .team-member {
-      max-width: 250px;
-      background-color: #111;
+    .badge {
+      width: 500px;
+      height: 500px;
+      background-color: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #444;
       border-radius: 10px;
-      padding: 1rem;
-      text-align: center;
     }
-
+    .badge.owned {
+      background-color: #66ff00;
+      color: #000;
+      font-weight: bold;
+      border-color: #66ff00;
+    }
+    .badge span {
+      font-size: 1.5rem;
+    }
+    section {
+      margin-top: 3rem;
+    }
+    .mint-card-container, .team-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+    }
+    .mint-card, .team-member {
+      background: #111;
+      padding: 1rem;
+      border-radius: 10px;
+      max-width: 300px;
+    }
     .team-member img {
       width: 100px;
       height: 100px;
       border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1rem;
-    }
-
-    .team-member h3 {
-      color: #66ff00;
-      font-size: 1.2rem;
       margin-bottom: 0.5rem;
-    }
-
-    .team-member p {
-      font-size: 1rem;
-      color: #fff;
-    }
-
-    .team-socials {
-      margin-top: 0.5rem;
-    }
-
-    .team-socials a {
-      color: #66ff00;
-      font-size: 1.5rem;
-      margin: 0 0.3rem;
-      transition: color 0.3s ease, transform 0.3s ease;
-    }
-
-    .team-socials a:hover {
-      color: #aaff00;
-      transform: scale(1.2);
-    }
-
-    #profile-page {
-      display: none;
-      padding: 2rem;
-      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="main-content">
-    <header>
-      <div class="right-socialbar" style="position: fixed; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1rem; z-index: 1000;">
-        <a href="https://x.com/Mutant_Records" target="_blank" aria-label="Twitter">
-          <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="X" style="width: 24px; height: 24px;">
-        </a>
-        <a href="/" aria-label="Home">
-          <i class="fas fa-home" style="font-size: 24px; color: #fff;"></i>
-        </a>
-        <a href="https://t.co/RJbIdCpeiY" target="_blank" aria-label="Discord">
-          <img src="https://cdn-icons-png.flaticon.com/512/3670/3670157.png" alt="Discord" style="width: 24px; height: 24px;">
-        </a>
+  <h1>Collectors Profile</h1>
+  <button id="connectWalletBtn">Connect Wallet</button>
+  <p id="walletAddress"></p>
+
+  <section id="profile-page" style="display: none;">
+    <div id="badges">
+      <div id="badge1" class="badge"><span>Badge 1</span></div>
+      <div id="badge2" class="badge"><span>Badge 2</span></div>
+      <div id="badge3" class="badge"><span>Badge 3</span></div>
+    </div>
+
+    <div id="profile-section">
+      <h3>Set Your Profile Name</h3>
+      <input type="text" id="profileNameInput" placeholder="Your name..." />
+      <button onclick="saveProfileName()">Save</button>
+      <p id="savedProfileName">Saved Name: -</p>
+    </div>
+  </section>
+
+  <section id="mint">
+    <h2>Mint Section</h2>
+    <div class="mint-card-container">
+      <div class="mint-card">
+        <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
       </div>
-    </header>
-
-    <section id="wallet-connect" style="text-align: center;">
-      <h2>Connect Your Wallet</h2>
-      <button id="connectWalletBtn">Connect Wallet</button>
-      <p id="walletAddress"></p>
-    </section>
-
-    <section id="profile-page">
-      <h2>Welcome to Your Profile</h2>
-      <div id="badges">
-        <p id="badge1">Badge 1: Not Checked</p>
-        <p id="badge2">Badge 2: Not Checked</p>
-        <p id="badge3">Badge 3: Not Checked</p>
+      <div class="mint-card">
+        <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
       </div>
-      <div id="profile-section">
-        <h3>Set Your Profile Name</h3>
-        <input type="text" id="profileNameInput" placeholder="Your name..." />
-        <button onclick="saveProfileName()">Save</button>
-        <p id="savedProfileName">Saved Name: -</p>
+    </div>
+  </section>
+
+  <section id="artists">
+    <h2>Our Artists</h2>
+    <p>Rick Starr, DJ and Soundengineer</p>
+    <p>NaNa The Ape, Founder of the Mutant Records Collective</p>
+  </section>
+
+  <section id="team">
+    <h2>Meet the Team</h2>
+    <div class="team-container">
+      <div class="team-member">
+        <img src="nanatheape.jpg" alt="NaNa The Ape" />
+        <h3>NaNa The Ape</h3>
+        <p>DJ, Producer & Founder</p>
       </div>
-    </section>
-
-    <section id="mints">
-      <h2>Mint Section</h2>
-      <div class="mint-card-container">
-        <div class="mint-card">
-          <div data-widget="highlight-mint-card" data-mint-collection-id="687c37d010dbc9335fa31a05" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-        </div>
-        <div class="mint-card">
-          <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
-        </div>
+      <div class="team-member">
+        <img src="rickstarr.jpg" alt="Rick Starr" />
+        <h3>Rick Starr</h3>
+        <p>Sound Engineer, DJ</p>
       </div>
-    </section>
-
-    <section id="team">
-      <h2>Meet the Team</h2>
-      <div class="team-container">
-        <div class="team-member">
-          <img src="nanatheape.jpg" alt="NaNa The Ape" loading="lazy">
-          <h3>NaNa The Ape</h3>
-          <p>DJ, Producer & Founder</p>
-          <div class="team-socials">
-            <a href="https://x.com/NaNaTheApe" target="_blank" aria-label="NaNa The Ape on X">
-              <i class="fab fa-x-twitter"></i>
-            </a>
-          </div>
-        </div>
-        <div class="team-member">
-          <img src="rickstarr.jpg" alt="Rick Starr" loading="lazy">
-          <h3>Rick Starr</h3>
-          <p>Sound Engineer, DJ</p>
-          <div class="team-socials">
-            <a href="https://x.com/rickstarr031" target="_blank" aria-label="Rick Starr on X">
-              <i class="fab fa-x-twitter"></i>
-            </a>
-          </div>
-        </div>
-        <div class="team-member">
-          <img src="shanananft.jpg" alt="$Shanananft" loading="lazy">
-          <h3>$Shanananft</h3>
-          <p>Musician & 3D Animator</p>
-          <div class="team-socials">
-            <a href="https://x.com/rodolfo_shanana" target="_blank" aria-label="$Shanananft on X">
-              <i class="fab fa-x-twitter"></i>
-            </a>
-          </div>
-        </div>
+      <div class="team-member">
+        <img src="shanananft.jpg" alt="$Shanananft" />
+        <h3>$Shanananft</h3>
+        <p>Musician & 3D Animator</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="impressum">
-      <h2>Imprint</h2>
-      <p>Legal disclosure and contact information will go here.</p>
-    </section>
-  </div>
+  <section id="impressum">
+    <h2>Imprint</h2>
+    <p>Legal disclosure and contact information will go here.</p>
+  </section>
 
-  <!-- Scripts -->
-  <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1" id="highlight-embed-script" data-embed-version="2.0"></script>
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
-  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
-  <script defer>
+  <script>
     const badgeContracts = {
       badge1: "0xed10cd2183de930c70c812d237d5ee763a9bbc52",
       badge2: "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09",
@@ -284,46 +148,85 @@
     };
 
     const abi = ["function balanceOf(address owner) view returns (uint256)"];
-    const providerOptions = {};
-    const web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions });
+    const APECHAIN_PARAMS = {
+      chainId: "0x50A",
+      chainName: "ApeChain",
+      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
+      rpcUrls: ["https://rpc.apexape.io"],
+      blockExplorerUrls: ["https://apescan.io"]
+    };
 
     let signer;
     let userAddress;
 
     document.getElementById("connectWalletBtn").addEventListener("click", async () => {
       try {
-        const instance = await web3Modal.connect();
-        const provider = new ethers.providers.Web3Provider(instance);
+        if (!window.ethereum) {
+          alert("MetaMask is not installed. Please install it.");
+          return;
+        }
+
+        await switchToApeChain();
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
         signer = provider.getSigner();
         userAddress = await signer.getAddress();
 
+        const message = "Login to Mutant Records with your wallet.";
+        await signer.signMessage(message);
+
         document.getElementById("walletAddress").innerText = `Connected: ${userAddress}`;
         document.getElementById("profile-page").style.display = "block";
+
         await checkNFTBadges(userAddress);
         loadProfileName();
       } catch (err) {
-        console.error("Wallet connection failed:", err);
+        console.error("Connection failed:", err);
+        alert("Wallet connection failed.");
       }
     });
 
+    async function switchToApeChain() {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: APECHAIN_PARAMS.chainId }],
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [APECHAIN_PARAMS],
+            });
+          } catch (addError) {
+            throw new Error("Failed to add ApeChain");
+          }
+        } else {
+          throw new Error("User rejected network switch");
+        }
+      }
+    }
+
     async function checkNFTBadges(wallet) {
-      const rpc = "https://rpc.apexape.io";
-      const apeProvider = new ethers.providers.JsonRpcProvider(rpc);
+      const provider = new ethers.providers.JsonRpcProvider(APECHAIN_PARAMS.rpcUrls[0]);
 
       for (const [badgeId, contractAddr] of Object.entries(badgeContracts)) {
         try {
-          const contract = new ethers.Contract(contractAddr, abi, apeProvider);
+          const contract = new ethers.Contract(contractAddr, abi, provider);
           const balance = await contract.balanceOf(wallet);
           const badgeElem = document.getElementById(badgeId);
 
           if (balance.gt(0)) {
-            badgeElem.innerHTML = `${badgeId.toUpperCase()}: <span style='color: #66ff00;'>Owned</span>`;
+            badgeElem.classList.add("owned");
+            badgeElem.innerHTML = `<span>${badgeId.toUpperCase()}<br>✔ Owned</span>`;
           } else {
-            badgeElem.innerHTML = `${badgeId.toUpperCase()}: <span style='color: #ff3333;'>Not Owned</span>`;
+            badgeElem.classList.remove("owned");
+            badgeElem.innerHTML = `<span>${badgeId.toUpperCase()}</span>`;
           }
         } catch (err) {
           console.error(`Error checking ${badgeId}:`, err);
-          document.getElementById(badgeId).innerText = `${badgeId.toUpperCase()}: Error`;
         }
       }
     }
@@ -348,5 +251,6 @@
   </script>
 </body>
 </html>
+
 
 
