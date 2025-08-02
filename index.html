@@ -122,13 +122,6 @@
       font-size: 1.5rem;
     }
 
-    /* Team Section */
-    #team {
-      padding: 2rem;
-      text-align: center;
-      background-color: #000;
-    }
-
     .team-container {
       display: flex;
       flex-wrap: wrap;
@@ -180,32 +173,10 @@
       transform: scale(1.2);
     }
 
-    @media (max-width: 768px) {
-      .mint-card {
-        max-width: 220px;
-      }
-
-      .swiper-container {
-        max-width: 90%;
-        padding: 1rem 0;
-      }
-
-      .swiper-slide {
-        padding: 1rem;
-      }
-
-      .swiper-slide img {
-        width: 80px;
-        height: 80px;
-      }
-
-      .swiper-slide p {
-        font-size: 0.9rem;
-      }
-
-      .team-member {
-        max-width: 90%;
-      }
+    #profile-page {
+      display: none;
+      padding: 2rem;
+      text-align: center;
     }
   </style>
 </head>
@@ -225,6 +196,27 @@
       </div>
     </header>
 
+    <section id="wallet-connect" style="text-align: center;">
+      <h2>Connect Your Wallet</h2>
+      <button id="connectWalletBtn">Connect Wallet</button>
+      <p id="walletAddress"></p>
+    </section>
+
+    <section id="profile-page">
+      <h2>Welcome to Your Profile</h2>
+      <div id="badges">
+        <p id="badge1">Badge 1: Not Checked</p>
+        <p id="badge2">Badge 2: Not Checked</p>
+        <p id="badge3">Badge 3: Not Checked</p>
+      </div>
+      <div id="profile-section">
+        <h3>Set Your Profile Name</h3>
+        <input type="text" id="profileNameInput" placeholder="Your name..." />
+        <button onclick="saveProfileName()">Save</button>
+        <p id="savedProfileName">Saved Name: -</p>
+      </div>
+    </section>
+
     <section id="mints">
       <h2>Mint Section</h2>
       <div class="mint-card-container">
@@ -234,37 +226,6 @@
         <div class="mint-card">
           <div data-widget="highlight-mint-card" data-mint-collection-id="6883c6d3ec207499979a1de6" data-theme='{"bgColor":"#000000","textColor":"#ffffff","accentColor":"#66ff00"}'></div>
         </div>
-      </div>
-    </section>
-
-    <section id="artists">
-      <h2>Our Artists</h2>
-      <div class="swiper-container">
-        <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <img src="rickstarr.jpg" alt="Rick Starr" loading="lazy">
-            <p>Rick Starr is a DJ and Soundengineer.</p>
-            <div class="artist-socials">
-              <a href="#" aria-label="Spotify (Coming Soon)"><i class="fab fa-spotify"></i></a>
-              <a href="#" aria-label="Apple Music (Coming Soon)"><i class="fab fa-apple"></i></a>
-              <a href="#" aria-label="Instagram (Coming Soon)"><i class="fab fa-instagram"></i></a>
-              <a href="#" aria-label="TikTok (Coming Soon)"><i class="fab fa-tiktok"></i></a>
-              <a href="#" aria-label="Twitter (Coming Soon)"><i class="fab fa-x-twitter"></i></a>
-            </div>
-          </div>
-          <div class="swiper-slide">
-            <img src="nanatheape.jpg" alt="NaNa The Ape" loading="lazy">
-            <p>NaNa The Ape, founder of the Mutant Records collective.</p>
-            <div class="artist-socials">
-              <a href="https://spotify.com/nanatheape" target="_blank" aria-label="Spotify"><i class="fab fa-spotify"></i></a>
-              <a href="https://music.apple.com/artist/nanatheape" target="_blank" aria-label="Apple Music"><i class="fab fa-apple"></i></a>
-              <a href="https://instagram.com/nanatheape" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-              <a href="https://tiktok.com/@nanatheape" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-              <a href="https://x.com/nanatheape" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="swiper-pagination"></div>
       </div>
     </section>
 
@@ -311,28 +272,81 @@
   </div>
 
   <!-- Scripts -->
-  <script type="module" crossorigin="true"
-    src="https://mint.highlight.xyz/assets/embed.js?v=1"
-    id="highlight-embed-script"
-    data-embed-version="2.0"></script>
-
+  <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1" id="highlight-embed-script" data-embed-version="2.0"></script>
   <script src="https://unpkg.com/swiper/swiper-bundle.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+  <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
   <script defer>
-    document.addEventListener("DOMContentLoaded", function () {
-      new Swiper('.swiper-container', {
-        slidesPerView: 1,
-        spaceBetween: 30,
-        loop: true,
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true
-        },
-        autoplay: {
-          delay: 5000,
-        },
-      });
+    const badgeContracts = {
+      badge1: "0xed10cd2183de930c70c812d237d5ee763a9bbc52",
+      badge2: "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09",
+      badge3: "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09",
+    };
+
+    const abi = ["function balanceOf(address owner) view returns (uint256)"];
+    const providerOptions = {};
+    const web3Modal = new window.Web3Modal.default({ cacheProvider: false, providerOptions });
+
+    let signer;
+    let userAddress;
+
+    document.getElementById("connectWalletBtn").addEventListener("click", async () => {
+      try {
+        const instance = await web3Modal.connect();
+        const provider = new ethers.providers.Web3Provider(instance);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+
+        document.getElementById("walletAddress").innerText = `Connected: ${userAddress}`;
+        document.getElementById("profile-page").style.display = "block";
+        await checkNFTBadges(userAddress);
+        loadProfileName();
+      } catch (err) {
+        console.error("Wallet connection failed:", err);
+      }
     });
+
+    async function checkNFTBadges(wallet) {
+      const rpc = "https://rpc.apexape.io";
+      const apeProvider = new ethers.providers.JsonRpcProvider(rpc);
+
+      for (const [badgeId, contractAddr] of Object.entries(badgeContracts)) {
+        try {
+          const contract = new ethers.Contract(contractAddr, abi, apeProvider);
+          const balance = await contract.balanceOf(wallet);
+          const badgeElem = document.getElementById(badgeId);
+
+          if (balance.gt(0)) {
+            badgeElem.innerHTML = `${badgeId.toUpperCase()}: <span style='color: #66ff00;'>Owned</span>`;
+          } else {
+            badgeElem.innerHTML = `${badgeId.toUpperCase()}: <span style='color: #ff3333;'>Not Owned</span>`;
+          }
+        } catch (err) {
+          console.error(`Error checking ${badgeId}:`, err);
+          document.getElementById(badgeId).innerText = `${badgeId.toUpperCase()}: Error`;
+        }
+      }
+    }
+
+    function saveProfileName() {
+      const name = document.getElementById("profileNameInput").value;
+      if (!userAddress) {
+        alert("Connect your wallet first.");
+        return;
+      }
+      localStorage.setItem(`profile_${userAddress}`, name);
+      document.getElementById("savedProfileName").innerText = `Saved Name: ${name}`;
+    }
+
+    function loadProfileName() {
+      if (!userAddress) return;
+      const saved = localStorage.getItem(`profile_${userAddress}`);
+      if (saved) {
+        document.getElementById("savedProfileName").innerText = `Saved Name: ${saved}`;
+      }
+    }
   </script>
 </body>
 </html>
+
 
