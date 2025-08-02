@@ -122,26 +122,6 @@
       font-size: 1.5rem;
     }
 
-    .swiper-button-next,
-    .swiper-button-prev {
-      display: inline-block;
-      margin: 2rem 1rem 0;
-      font-size: 2rem;
-      color: #66ff00;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-
-    .swiper-button-next:hover,
-    .swiper-button-prev:hover {
-      transform: scale(1.2);
-      color: #aaff00;
-    }
-
-    .carousel-controls {
-      text-align: center;
-    }
-
     @media (max-width: 768px) {
       .mint-card {
         max-width: 220px;
@@ -163,12 +143,6 @@
 
       .swiper-slide p {
         font-size: 0.9rem;
-      }
-
-      .swiper-button-next,
-      .swiper-button-prev {
-        font-size: 1.5rem;
-        margin: 1rem;
       }
     }
   </style>
@@ -229,10 +203,6 @@
           </div>
         </div>
         <div class="swiper-pagination"></div>
-        <div class="carousel-controls">
-          <div class="swiper-button-prev"><i class="fas fa-angle-left"></i></div>
-          <div class="swiper-button-next"><i class="fas fa-angle-right"></i></div>
-        </div>
       </div>
     </section>
 
@@ -258,10 +228,6 @@
         pagination: {
           el: '.swiper-pagination',
           clickable: true
-        },
-        navigation: {
-          nextEl: '.swiper-button-next',
-          prevEl: '.swiper-button-prev'
         },
         autoplay: {
           delay: 5000,
