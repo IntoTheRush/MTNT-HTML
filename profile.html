@@ -4,12 +4,21 @@
   <title>Record Store Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(5, 250px);
       grid-gap: 20px;
       margin-top: 20px;
     }
+
     .badge-slot {
       width: 250px;
       height: 250px;
@@ -21,22 +30,45 @@
       background-color: #000;
       color: #fff;
     }
+
     .badge-slot img {
       max-width: 100%;
       max-height: 100%;
     }
+
     #loadingIndicator {
       display: none;
       font-size: 18px;
-      color: #ccc;
+      color: #fff;
       margin-top: 20px;
     }
+
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
+      color: #fff;
     }
-    .unlocked { color: #0f0; }
-    .locked { color: #f00; }
+
+    .unlocked {
+      color: #0f0;
+    }
+
+    .locked {
+      color: #f00;
+    }
+
+    button {
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #fff;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
   </style>
 </head>
 <body>
@@ -109,7 +141,7 @@
         if (err.code === 4902) {
           await provider.send("wallet_addEthereumChain", [apechainParams]);
         } else {
-          console.error(err);
+          console.error("Chain switch failed", err);
           alert("Failed to switch to ApeChain");
         }
       }
@@ -131,11 +163,7 @@
       document.getElementById("loadingIndicator").style.display = "block";
 
       let badgeURIs = [];
-
-      // Badge flags
-      let badge1 = false;
-      let badge2 = false;
-      let badge3 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
 
       const badgeGrid = document.getElementById("badgeGrid");
       badgeGrid.innerHTML = "";
@@ -147,34 +175,34 @@
 
         try {
           balance = await contract.balanceOf(userAddress);
+          console.log(`Balance for ${addr}:`, balance.toString());
         } catch (err) {
-          console.warn("Error fetching balance from contract", addr);
+          console.error(`Failed to fetch balance from ${addr}:`, err);
           continue;
         }
 
-        const fetchLimit = Math.min(balance.toNumber(), 10 - badgeURIs.length);
-        for (let i = 0; i < fetchLimit; i++) {
+        for (let i = 0; i < balance.toNumber(); i++) {
           try {
             const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i);
             const tokenNum = tokenId.toNumber();
+            console.log(`Token ID from ${addr}:`, tokenNum);
 
-            // Badge 1: any token from contractA
             if (addr === contractA) badge1 = true;
-
-            // Badge 2 & 3: token range from contractB
             if (addr === contractB) {
               if (tokenNum >= 1 && tokenNum <= 420) badge2 = true;
               if (tokenNum >= 2000 && tokenNum <= 4000) badge3 = true;
             }
 
-            // Load NFT image
             let uri = await contract.tokenURI(tokenId);
+            console.log(`Token URI for ${tokenNum} (${addr}):`, uri);
+
             if (uri.startsWith("ipfs://")) {
               uri = "https://ipfs.io/ipfs/" + uri.substring(7);
             }
 
             const res = await fetch(uri);
             const metadata = await res.json();
+            console.log(`Metadata for token ${tokenNum}:`, metadata);
 
             let image = metadata.image;
             if (image.startsWith("ipfs://")) {
@@ -183,19 +211,21 @@
 
             badgeURIs.push(image);
           } catch (err) {
-            console.warn("Error processing token from", addr, err);
+            console.error("TOKEN FETCH ERROR", {
+              contract: addr,
+              index: i,
+              error: err
+            });
           }
         }
       }
 
       if (badgeURIs.length === 0) {
-        alert("Access denied — you must hold at least 1 NFT.");
-        location.reload();
+        document.getElementById("loadingIndicator").innerText = "❌ No NFTs detected — check dev console.";
         return;
       }
 
-      // Render badges
-      badgeURIs.slice(0, 10).forEach(uri => {
+      badgeURIs.forEach(uri => {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
         const img = document.createElement("img");
@@ -212,17 +242,16 @@
         badgeGrid.appendChild(slot);
       }
 
-      // Display badge status
       document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (Any token from ...bbc52)</span>"
+        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any token from ...bbc52)</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
 
       document.getElementById("badgeTwoStatus").innerHTML = badge2
-        ? "✅ <span class='unlocked'>Badge 2 Unlocked (Token ID 1–420 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 2 Unlocked (ID 1–420 from ...ec09)</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
 
       document.getElementById("badgeThreeStatus").innerHTML = badge3
-        ? "✅ <span class='unlocked'>Badge 3 Unlocked (Token ID 2000–4000 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 3 Unlocked (ID 2000–4000 from ...ec09)</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
@@ -236,3 +265,5 @@
   </script>
 </body>
 </html>
+
+
