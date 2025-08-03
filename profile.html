@@ -92,34 +92,14 @@
   </div>
 
   <script>
-    const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52"; // Badge 1 (non-enumerable)
-    const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09"; // Badge 2 & 3 (enumerable)
+    const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52"; // Badge 1
+    const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09"; // Badge 2 & 3
 
     const contractABI = [
-      {
-        "constant": true,
-        "inputs": [{ "name": "owner", "type": "address" }],
-        "name": "balanceOf",
-        "outputs": [{ "name": "balance", "type": "uint256" }],
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          { "name": "owner", "type": "address" },
-          { "name": "index", "type": "uint256" }
-        ],
-        "name": "tokenOfOwnerByIndex",
-        "outputs": [{ "name": "tokenId", "type": "uint256" }],
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [{ "name": "tokenId", "type": "uint256" }],
-        "name": "tokenURI",
-        "outputs": [{ "name": "uri", "type": "string" }],
-        "type": "function"
-      }
+      { "constant": true, "inputs": [{ "name": "owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "owner", "type": "address" }, { "name": "index", "type": "uint256" }], "name": "tokenOfOwnerByIndex", "outputs": [{ "name": "tokenId", "type": "uint256" }], "type": "function" }
     ];
 
     const apechainParams = {
@@ -165,67 +145,46 @@
       let badgeURIs = [];
       let badge1 = false, badge2 = false, badge3 = false;
 
-      const badgeGrid = document.getElementById("badgeGrid");
-      badgeGrid.innerHTML = "";
+      const contractAInstance = new ethers.Contract(contractA, contractABI, provider);
+      const contractBInstance = new ethers.Contract(contractB, contractABI, provider);
 
-      const contracts = [contractA, contractB];
-      for (const addr of contracts) {
-        const contract = new ethers.Contract(addr, contractABI, provider);
-        let balance = ethers.BigNumber.from(0);
-
+      // 🔍 Manually scan token IDs 0–20 for contract A (non-enumerable)
+      for (let tokenId = 0; tokenId <= 69; tokenId++) {
         try {
-          balance = await contract.balanceOf(userAddress);
-          console.log(`Balance for ${addr}:`, balance.toString());
-        } catch (err) {
-          console.error(`Failed to fetch balance from ${addr}:`, err);
-          continue;
-        }
-
-        // Badge 1: Only check balance
-        if (addr === contractA) {
-          if (balance.gt(0)) {
+          const owner = await contractAInstance.ownerOf(tokenId);
+          if (owner.toLowerCase() === userAddress.toLowerCase()) {
             badge1 = true;
-            console.log("✅ Badge 1 unlocked (balance check only).");
-          } else {
-            console.log("❌ No tokens held for Badge 1.");
-          }
-          continue; // Skip tokenOfOwnerByIndex since it will fail
-        }
-
-        // Badge 2 & 3: Check token IDs
-        for (let i = 0; i < balance.toNumber(); i++) {
-          try {
-            const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i);
-            const tokenNum = tokenId.toNumber();
-            console.log(`Token ID from ${addr}:`, tokenNum);
-
-            if (tokenNum >= 1 && tokenNum <= 420) badge2 = true;
-            if (tokenNum >= 2000 && tokenNum <= 4000) badge3 = true;
-
-            let uri = await contract.tokenURI(tokenId);
-            console.log(`Token URI for ${tokenNum} (${addr}):`, uri);
-
-            if (uri.startsWith("ipfs://")) {
-              uri = "https://ipfs.io/ipfs/" + uri.substring(7);
-            }
-
-            const res = await fetch(uri);
+            const uri = await contractAInstance.tokenURI(tokenId);
+            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
+            const res = await fetch(resolvedUri);
             const metadata = await res.json();
-            console.log(`Metadata for token ${tokenNum}:`, metadata);
-
-            let image = metadata.image;
-            if (image.startsWith("ipfs://")) {
-              image = "https://ipfs.io/ipfs/" + image.substring(7);
-            }
-
+            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
             badgeURIs.push(image);
-          } catch (err) {
-            console.error("TOKEN FETCH ERROR", {
-              contract: addr,
-              index: i,
-              error: err
-            });
+            console.log("✅ Found NFT in contractA:", tokenId);
           }
+        } catch (err) {
+          // ownerOf fails if token doesn't exist — that's OK
+        }
+      }
+
+      // 🧠 Enumerate contractB using tokenOfOwnerByIndex
+      const balanceB = await contractBInstance.balanceOf(userAddress);
+      for (let i = 0; i < balanceB.toNumber(); i++) {
+        try {
+          const tokenId = await contractBInstance.tokenOfOwnerByIndex(userAddress, i);
+          const tokenNum = tokenId.toNumber();
+          if (tokenNum >= 1 && tokenNum <= 420) badge2 = true;
+          if (tokenNum >= 2000 && tokenNum <= 4000) badge3 = true;
+
+          const uri = await contractBInstance.tokenURI(tokenId);
+          const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
+          const res = await fetch(resolvedUri);
+          const metadata = await res.json();
+          const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
+          badgeURIs.push(image);
+          console.log("✅ Found NFT in contractB:", tokenNum);
+        } catch (err) {
+          console.warn("Failed token fetch from contractB", err);
         }
       }
 
@@ -234,6 +193,8 @@
         return;
       }
 
+      const badgeGrid = document.getElementById("badgeGrid");
+      badgeGrid.innerHTML = "";
       badgeURIs.forEach(uri => {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
@@ -274,5 +235,6 @@
   </script>
 </body>
 </html>
+
 
 
