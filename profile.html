@@ -85,6 +85,7 @@
     <div id="badgeOneStatus" class="badge-status"></div>
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
+    <div id="badgeFourStatus" class="badge-status"></div>
     <div id="loadingIndicator">Loading your records...</div>
 
     <h3>Your Records</h3>
@@ -94,6 +95,7 @@
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
+    const contractC = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07"; // Badge 4
 
     const contractABI = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
@@ -144,8 +146,9 @@
 
       const contractAInstance = new ethers.Contract(contractA, contractABI, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI, provider);
+      const contractCInstance = new ethers.Contract(contractC, contractABI, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false;
+      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
       const seenNames = new Set();
       const badgeURIs = [];
 
@@ -167,6 +170,7 @@
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
               if (!badge1 && contractLabel === 'A') badge1 = true;
+              if (!badge4 && contractLabel === 'C') badge4 = true;
             }
           } catch (err) {
             console.warn(`Error with token ${tokenId} on contract ${contractLabel}:`, err);
@@ -178,6 +182,7 @@
       await scanContract(contractAInstance, [...Array(70).keys()], 'A');
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
+      await scanContract(contractCInstance, [...Array(50).keys()], 'C');
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -203,6 +208,10 @@
       document.getElementById("badgeThreeStatus").innerHTML = badge3
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
+
+      document.getElementById("badgeFourStatus").innerHTML = badge4
+        ? "✅ <span class='unlocked'>Badge 4 Unlocked (any NFT from contractC)</span>"
+        : "🔒 <span class='locked'>Badge 4 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
     }
