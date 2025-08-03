@@ -33,11 +33,11 @@
   </div>
 
   <div id="profileSection" style="display:none;">
-    <h2>Your Profile</h2>
+    <h2>Mutant Records collection by</h2>
     <p id="walletAddress"></p>
     <button onclick="logout()">Logout</button>
 
-    <h3>Your NFT Badges</h3>
+    <h3>Your Records</h3>
     <div class="badge-grid" id="badgeGrid">
       <!-- 10 badge slots will be inserted here -->
     </div>
@@ -156,7 +156,7 @@
           img.src = fixedUri;
           slot.appendChild(img);
         } else {
-          slot.innerText = "Empty Badge Slot";
+          slot.innerText = "Empty Record Slot";
         }
 
         badgeGrid.appendChild(slot);
