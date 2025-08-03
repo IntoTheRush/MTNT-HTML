@@ -166,7 +166,7 @@
 
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
-              if (!badge1) badge1 = true; // any valid NFT from contractA qualifies
+              if (!badge1) badge1 = true;
             }
           } catch (err) {}
           if (badgeURIs.length >= 10) break;
@@ -195,11 +195,11 @@
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
 
       document.getElementById("badgeTwoStatus").innerHTML = badge2
-        ? "✅ <span class='unlocked'>Badge 2 Unlocked (""Let's Ape"")</span>"
+        ? "✅ <span class='unlocked'>Badge 2 Unlocked (\"Let's Ape\")</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
 
       document.getElementById("badgeThreeStatus").innerHTML = badge3
-        ? "✅ <span class='unlocked'>Badge 3 Unlocked ("$HOES Anthem")</span>"
+        ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
@@ -213,4 +213,5 @@
   </script>
 </body>
 </html>
+
 
