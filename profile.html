@@ -149,7 +149,7 @@
       const seenNames = new Set();
       const badgeURIs = [];
 
-      async function scanContract(contract, tokenIds) {
+      async function scanContract(contract, tokenIds, contractLabel) {
         for (let tokenId of tokenIds) {
           try {
             const owner = await contract.ownerOf(tokenId);
@@ -166,16 +166,18 @@
 
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
-              if (!badge1) badge1 = true;
+              if (!badge1 && contractLabel === 'A') badge1 = true;
             }
-          } catch (err) {}
+          } catch (err) {
+            console.warn(`Error with token ${tokenId} on contract ${contractLabel}:`, err);
+          }
           if (badgeURIs.length >= 10) break;
         }
       }
 
-      await scanContract(contractAInstance, [...Array(70).keys()]);
-      await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1));
-      await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800));
+      await scanContract(contractAInstance, [...Array(70).keys()], 'A');
+      await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
+      await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -213,5 +215,6 @@
   </script>
 </body>
 </html>
+
 
 
