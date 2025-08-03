@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Record Store Collection</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    .badge-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 500px);
+      grid-gap: 20px;
+      margin-top: 20px;
+    }
+    .badge-slot {
+      width: 500px;
+      height: 500px;
+      border: 2px dashed #888;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background-color: #f9f9f9;
+    }
+    .badge-slot img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="loginSection">
+    <h1>Connect Wallet</h1>
+    <button id="loginButton">Login with MetaMask</button>
+  </div>
+
+  <div id="profileSection" style="display:none;">
+    <h2>Your Profile</h2>
+    <p id="walletAddress"></p>
+    <button onclick="logout()">Logout</button>
+
+    <h3>Your NFT Badges</h3>
+    <div class="badge-grid" id="badgeGrid">
+      <!-- 10 badge slots will be inserted here -->
+    </div>
+  </div>
+
+  <script>
+    const contractAddresses = [
+      "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09",
+      "0xed10cd2183de930c70c812d237d5ee763a9bbc52"
+    ];
+
+    const contractABI = [
+      {
+        "constant": true,
+        "inputs": [{ "name": "owner", "type": "address" }],
+        "name": "balanceOf",
+        "outputs": [{ "name": "balance", "type": "uint256" }],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          { "name": "owner", "type": "address" },
+          { "name": "index", "type": "uint256" }
+        ],
+        "name": "tokenOfOwnerByIndex",
+        "outputs": [{ "name": "tokenId", "type": "uint256" }],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "name": "tokenURI",
+        "outputs": [{ "name": "uri", "type": "string" }],
+        "type": "function"
+      }
+    ];
+
+    const apechainParams = {
+      chainId: "0x8163",
+      chainName: "ApeChain",
+      nativeCurrency: {
+        name: "APE",
+        symbol: "APE",
+        decimals: 18
+      },
+      rpcUrls: ["https://apechain.calderachain.xyz/http"],
+      blockExplorerUrls: ["https://apescan.io"]
+    };
+
+    async function switchToApeChain(provider) {
+      try {
+        await provider.send("wallet_switchEthereumChain", [{ chainId: apechainParams.chainId }]);
+      } catch (err) {
+        if (err.code === 4902) {
+          await provider.send("wallet_addEthereumChain", [apechainParams]);
+        } else {
+          console.error(err);
+          alert("Failed to switch to ApeChain");
+        }
+      }
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) return alert("Please install MetaMask!");
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      await switchToApeChain(provider);
+
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
+      document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
+
+      let ownsNFT = false;
+      let badgeURIs = [];
+
+      for (const addr of contractAddresses) {
+        const contract = new ethers.Contract(addr, contractABI, provider);
+        const balance = await contract.balanceOf(userAddress);
+        if (balance.gt(0)) ownsNFT = true;
+
+        const fetchLimit = Math.min(balance.toNumber(), 10 - badgeURIs.length);
+        for (let i = 0; i < fetchLimit; i++) {
+          try {
+            const tokenId = await contract.tokenOfOwnerByIndex(userAddress, i);
+            const uri = await contract.tokenURI(tokenId);
+            badgeURIs.push(uri);
+          } catch (err) {
+            console.warn("Error loading token:", err);
+          }
+        }
+      }
+
+      if (!ownsNFT) {
+        alert("Access denied — you must hold at least 1 NFT.");
+        return;
+      }
+
+      // Update UI
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("profileSection").style.display = "block";
+
+      // Render badges
+      const badgeGrid = document.getElementById("badgeGrid");
+      for (let i = 0; i < 10; i++) {
+        const slot = document.createElement("div");
+        slot.className = "badge-slot";
+
+        if (i < badgeURIs.length) {
+          const img = document.createElement("img");
+          // If IPFS URI, transform it
+          const fixedUri = badgeURIs[i].startsWith("ipfs://")
+            ? "https://ipfs.io/ipfs/" + badgeURIs[i].substring(7)
+            : badgeURIs[i];
+          img.src = fixedUri;
+          slot.appendChild(img);
+        } else {
+          slot.innerText = "Empty Badge Slot";
+        }
+
+        badgeGrid.appendChild(slot);
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    document.getElementById("loginButton").onclick = connectWallet;
+  </script>
+</body>
+</html>
