@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Record Store Collection</title>
+  <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     body {
@@ -22,7 +22,7 @@
     .badge-slot {
       width: 250px;
       height: 250px;
-      border: 2px dashed #888;
+      border: 2px solid #fff;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -96,14 +96,24 @@
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09"; // Badge 2 & 3
 
     const contractABI = [
-      { "constant": true, "inputs": [{ "name": "owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" },
-      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" },
-      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
-      { "constant": true, "inputs": [{ "name": "owner", "type": "address" }, { "name": "index", "type": "uint256" }], "name": "tokenOfOwnerByIndex", "outputs": [{ "name": "tokenId", "type": "uint256" }], "type": "function" }
+      {
+        "constant": true,
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "name": "ownerOf",
+        "outputs": [{ "name": "owner", "type": "address" }],
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [{ "name": "tokenId", "type": "uint256" }],
+        "name": "tokenURI",
+        "outputs": [{ "name": "uri", "type": "string" }],
+        "type": "function"
+      }
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8163",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -142,13 +152,16 @@
       document.getElementById("profileSection").style.display = "block";
       document.getElementById("loadingIndicator").style.display = "block";
 
-      let badgeURIs = [];
-      let badge1 = false, badge2 = false, badge3 = false;
+      const badgeGrid = document.getElementById("badgeGrid");
+      badgeGrid.innerHTML = "";
 
       const contractAInstance = new ethers.Contract(contractA, contractABI, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI, provider);
 
-      // 🔍 Manually scan token IDs 0–20 for contract A (non-enumerable)
+      let badge1 = false, badge2 = false, badge3 = false;
+      const badgeURIs = [];
+
+      // 🔍 Badge 1 — token IDs 0 to 69 on contractA
       for (let tokenId = 0; tokenId <= 69; tokenId++) {
         try {
           const owner = await contractAInstance.ownerOf(tokenId);
@@ -160,68 +173,77 @@
             const metadata = await res.json();
             const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
             badgeURIs.push(image);
-            console.log("✅ Found NFT in contractA:", tokenId);
           }
-        } catch (err) {
-          // ownerOf fails if token doesn't exist — that's OK
-        }
+        } catch (err) { /* token doesn't exist or not owned */ }
       }
 
-      // 🧠 Enumerate contractB using tokenOfOwnerByIndex
-      const balanceB = await contractBInstance.balanceOf(userAddress);
-      for (let i = 0; i < balanceB.toNumber(); i++) {
+      // 🔍 Badge 2 — token IDs 1 to 420 on contractB
+      for (let tokenId = 1; tokenId <= 420; tokenId++) {
+        if (badgeURIs.length >= 10) break;
         try {
-          const tokenId = await contractBInstance.tokenOfOwnerByIndex(userAddress, i);
-          const tokenNum = tokenId.toNumber();
-          if (tokenNum >= 1 && tokenNum <= 420) badge2 = true;
-          if (tokenNum >= 2000 && tokenNum <= 4000) badge3 = true;
+          const owner = await contractBInstance.ownerOf(tokenId);
+          if (owner.toLowerCase() === userAddress.toLowerCase()) {
+            badge2 = true;
+            const uri = await contractBInstance.tokenURI(tokenId);
+            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
+            const res = await fetch(resolvedUri);
+            const metadata = await res.json();
+            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
+            badgeURIs.push(image);
+          }
+        } catch (err) { /* token doesn't exist or not owned */ }
+      }
 
-          const uri = await contractBInstance.tokenURI(tokenId);
-          const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
-          const res = await fetch(resolvedUri);
-          const metadata = await res.json();
-          const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
-          badgeURIs.push(image);
-          console.log("✅ Found NFT in contractB:", tokenNum);
-        } catch (err) {
-          console.warn("Failed token fetch from contractB", err);
-        }
+      // 🔍 Badge 3 — token IDs 2800 to 4000 on contractB
+      for (let tokenId = 2800; tokenId <= 4000; tokenId++) {
+        if (badgeURIs.length >= 10) break;
+        try {
+          const owner = await contractBInstance.ownerOf(tokenId);
+          if (owner.toLowerCase() === userAddress.toLowerCase()) {
+            badge3 = true;
+            const uri = await contractBInstance.tokenURI(tokenId);
+            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
+            const res = await fetch(resolvedUri);
+            const metadata = await res.json();
+            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
+            badgeURIs.push(image);
+          }
+        } catch (err) { /* token doesn't exist or not owned */ }
       }
 
       if (badgeURIs.length === 0) {
-        document.getElementById("loadingIndicator").innerText = "❌ No NFTs detected — check dev console.";
+        document.getElementById("loadingIndicator").innerText = "❌ No NFTs found — check your wallet.";
         return;
       }
 
-      const badgeGrid = document.getElementById("badgeGrid");
-      badgeGrid.innerHTML = "";
-      badgeURIs.forEach(uri => {
+      // Render NFT images
+      for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
-        const img = document.createElement("img");
-        img.src = uri;
-        img.alt = "NFT";
-        slot.appendChild(img);
-        badgeGrid.appendChild(slot);
-      });
 
-      while (badgeGrid.children.length < 10) {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        slot.innerText = "Empty Record Slot";
+        if (i < badgeURIs.length) {
+          const img = document.createElement("img");
+          img.src = badgeURIs[i];
+          img.alt = "NFT";
+          slot.appendChild(img);
+        } else {
+          slot.innerText = "Empty Record Slot";
+        }
+
         badgeGrid.appendChild(slot);
       }
 
+      // Show badge status
       document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any token from ...bbc52)</span>"
+        ? "✅ <span class='unlocked'>Badge 1 Unlocked (token 0–69 from ...bbc52)</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
 
       document.getElementById("badgeTwoStatus").innerHTML = badge2
-        ? "✅ <span class='unlocked'>Badge 2 Unlocked (ID 1–420 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 2 Unlocked (token 1–420 from ...ec09)</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
 
       document.getElementById("badgeThreeStatus").innerHTML = badge3
-        ? "✅ <span class='unlocked'>Badge 3 Unlocked (ID 2000–4000 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 3 Unlocked (token 2800–4000 from ...ec09)</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
@@ -235,6 +257,4 @@
   </script>
 </body>
 </html>
-
-
 
