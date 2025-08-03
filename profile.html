@@ -111,7 +111,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183", // fixed: must be hex string
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -186,12 +186,12 @@
         }
       }
 
-      await scanContract(contractAInstance, [...Array(70).keys()], 'A');
+      await scanContract(contractAInstance, [...Array(70).keys()].map(i => i + 1), 'A'); // start at tokenId 1
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
 
       try {
-        const badge4TokenId = 1; // only tokenId = 1 qualifies
+        const badge4TokenId = 1;
         const balance = await contractCInstance.balanceOf(userAddress, badge4TokenId);
         if (balance.gt(0)) {
           badge4 = true;
@@ -248,6 +248,7 @@
   </script>
 </body>
 </html>
+
 
 
 
