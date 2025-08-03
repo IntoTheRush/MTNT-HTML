@@ -92,24 +92,12 @@
   </div>
 
   <script>
-    const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52"; // Badge 1
-    const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09"; // Badge 2 & 3
+    const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
+    const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
 
     const contractABI = [
-      {
-        "constant": true,
-        "inputs": [{ "name": "tokenId", "type": "uint256" }],
-        "name": "ownerOf",
-        "outputs": [{ "name": "owner", "type": "address" }],
-        "type": "function"
-      },
-      {
-        "constant": true,
-        "inputs": [{ "name": "tokenId", "type": "uint256" }],
-        "name": "tokenURI",
-        "outputs": [{ "name": "uri", "type": "string" }],
-        "type": "function"
-      }
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
     ];
 
     const apechainParams = {
@@ -131,7 +119,6 @@
         if (err.code === 4902) {
           await provider.send("wallet_addEthereumChain", [apechainParams]);
         } else {
-          console.error("Chain switch failed", err);
           alert("Failed to switch to ApeChain");
         }
       }
@@ -159,91 +146,60 @@
       const contractBInstance = new ethers.Contract(contractB, contractABI, provider);
 
       let badge1 = false, badge2 = false, badge3 = false;
+      const seenNames = new Set();
       const badgeURIs = [];
 
-      // 🔍 Badge 1 — token IDs 0 to 69 on contractA
-      for (let tokenId = 0; tokenId <= 69; tokenId++) {
-        try {
-          const owner = await contractAInstance.ownerOf(tokenId);
-          if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            badge1 = true;
-            const uri = await contractAInstance.tokenURI(tokenId);
-            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
-            const res = await fetch(resolvedUri);
-            const metadata = await res.json();
-            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
-            badgeURIs.push(image);
-          }
-        } catch (err) { /* token doesn't exist or not owned */ }
+      async function scanContract(contract, tokenIds) {
+        for (let tokenId of tokenIds) {
+          try {
+            const owner = await contract.ownerOf(tokenId);
+            if (owner.toLowerCase() === userAddress.toLowerCase()) {
+              const uri = await contract.tokenURI(tokenId);
+              const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
+              const metadata = await (await fetch(fixedUri)).json();
+
+              if (seenNames.has(metadata.name)) continue;
+              seenNames.add(metadata.name);
+
+              const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
+              badgeURIs.push(image);
+
+              if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
+              if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
+              if (!badge1) badge1 = true; // any valid NFT from contractA qualifies
+            }
+          } catch (err) {}
+          if (badgeURIs.length >= 10) break;
+        }
       }
 
-      // 🔍 Badge 2 — token IDs 1 to 420 on contractB
-      for (let tokenId = 1; tokenId <= 420; tokenId++) {
-        if (badgeURIs.length >= 10) break;
-        try {
-          const owner = await contractBInstance.ownerOf(tokenId);
-          if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            badge2 = true;
-            const uri = await contractBInstance.tokenURI(tokenId);
-            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
-            const res = await fetch(resolvedUri);
-            const metadata = await res.json();
-            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
-            badgeURIs.push(image);
-          }
-        } catch (err) { /* token doesn't exist or not owned */ }
-      }
+      await scanContract(contractAInstance, [...Array(70).keys()]);
+      await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1));
+      await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800));
 
-      // 🔍 Badge 3 — token IDs 2800 to 4000 on contractB
-      for (let tokenId = 2800; tokenId <= 4000; tokenId++) {
-        if (badgeURIs.length >= 10) break;
-        try {
-          const owner = await contractBInstance.ownerOf(tokenId);
-          if (owner.toLowerCase() === userAddress.toLowerCase()) {
-            badge3 = true;
-            const uri = await contractBInstance.tokenURI(tokenId);
-            const resolvedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.substring(7) : uri;
-            const res = await fetch(resolvedUri);
-            const metadata = await res.json();
-            const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.substring(7) : metadata.image;
-            badgeURIs.push(image);
-          }
-        } catch (err) { /* token doesn't exist or not owned */ }
-      }
-
-      if (badgeURIs.length === 0) {
-        document.getElementById("loadingIndicator").innerText = "❌ No NFTs found — check your wallet.";
-        return;
-      }
-
-      // Render NFT images
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
-
         if (i < badgeURIs.length) {
           const img = document.createElement("img");
           img.src = badgeURIs[i];
-          img.alt = "NFT";
           slot.appendChild(img);
         } else {
           slot.innerText = "Empty Record Slot";
         }
-
         badgeGrid.appendChild(slot);
       }
 
-      // Show badge status
       document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (token 0–69 from ...bbc52)</span>"
+        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any NFT from contractA)</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
 
       document.getElementById("badgeTwoStatus").innerHTML = badge2
-        ? "✅ <span class='unlocked'>Badge 2 Unlocked (token 1–420 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 2 Unlocked ("Let's Ape")</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
 
       document.getElementById("badgeThreeStatus").innerHTML = badge3
-        ? "✅ <span class='unlocked'>Badge 3 Unlocked (token 2800–4000 from ...ec09)</span>"
+        ? "✅ <span class='unlocked'>Badge 3 Unlocked ("$HOES Anthem")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
