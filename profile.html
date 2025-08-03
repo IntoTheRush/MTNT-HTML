@@ -95,11 +95,19 @@
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
-    const contractC = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07"; // Badge 4
+    const contractC = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07"; // ERC-1155 for Badge 4
 
-    const contractABI = [
+    const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
+    ];
+
+    const contractABI1155 = [
+      { "constant": true, "inputs": [
+        { "name": "account", "type": "address" },
+        { "name": "id", "type": "uint256" }
+      ], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "id", "type": "uint256" }], "name": "uri", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
     ];
 
     const apechainParams = {
@@ -144,9 +152,9 @@
       const badgeGrid = document.getElementById("badgeGrid");
       badgeGrid.innerHTML = "";
 
-      const contractAInstance = new ethers.Contract(contractA, contractABI, provider);
-      const contractBInstance = new ethers.Contract(contractB, contractABI, provider);
-      const contractCInstance = new ethers.Contract(contractC, contractABI, provider);
+      const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
+      const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
+      const contractCInstance = new ethers.Contract(contractC, contractABI1155, provider);
 
       let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
       const seenNames = new Set();
@@ -170,7 +178,6 @@
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
               if (!badge1 && contractLabel === 'A') badge1 = true;
-              if (!badge4 && contractLabel === 'C') badge4 = true;
             }
           } catch (err) {
             console.warn(`Error with token ${tokenId} on contract ${contractLabel}:`, err);
@@ -182,7 +189,24 @@
       await scanContract(contractAInstance, [...Array(70).keys()], 'A');
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
-      await scanContract(contractCInstance, [...Array(50).keys()], 'C');
+
+      try {
+        const badge4TokenId = 1; // only tokenId = 1 qualifies
+        const balance = await contractCInstance.balanceOf(userAddress, badge4TokenId);
+        if (balance.gt(0)) {
+          badge4 = true;
+          const uri = await contractCInstance.uri(badge4TokenId);
+          const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
+          const metadata = await (await fetch(fixedUri)).json();
+          const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
+          if (!seenNames.has(metadata.name)) {
+            seenNames.add(metadata.name);
+            badgeURIs.push(image);
+          }
+        }
+      } catch (err) {
+        console.warn("Badge 4 check failed:", err);
+      }
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -210,7 +234,7 @@
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("badgeFourStatus").innerHTML = badge4
-        ? "✅ <span class='unlocked'>Badge 4 Unlocked (any NFT from contractC)</span>"
+        ? "✅ <span class='unlocked'>Badge 4 Unlocked (ERC-1155 token ID 1)</span>"
         : "🔒 <span class='locked'>Badge 4 Locked</span>";
 
       document.getElementById("loadingIndicator").style.display = "none";
@@ -224,6 +248,7 @@
   </script>
 </body>
 </html>
+
 
 
 
