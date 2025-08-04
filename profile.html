@@ -6,7 +6,6 @@
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
-    /* (styling unchanged) */
     body {
       background: url('background.png') center center / cover no-repeat;
       background-attachment: fixed;
@@ -41,10 +40,12 @@
       font-size: 18px;
       background-color: #000;
       color: #fff;
+      overflow: hidden;
     }
     .badge-slot img, .badge-slot video {
       max-width: 100%;
       max-height: 100%;
+      object-fit: cover;
     }
     #loadingIndicator {
       display: none;
@@ -141,7 +142,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -196,7 +197,7 @@
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false;
+      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
       const badgeURIs = [];
       const seenNames = new Set();
 
@@ -216,11 +217,10 @@
               const metadata = await (await fetch(uri)).json();
               if (!seenNames.has(metadata.name)) {
                 seenNames.add(metadata.name);
-                badgeURIs.push({ src: resolveIPFS(metadata.image), name: metadata.name });
-
                 if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
                 if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
                 if (!badge1 && label === 'A') badge1 = true;
+                badgeURIs.push({ src: resolveIPFS(metadata.image), name: metadata.name });
               }
             }
           } catch (e) {
@@ -236,13 +236,25 @@
       await scanContract(contractBInstance, range(1, 420), 'B');
       await scanContract(contractBInstance, range(2800, 4000), 'B');
 
-      checkOGBadgeLoop(userAddress, contractOGInstance);
+      // Check OG badge
+      try {
+        for (let tokenId = 0; tokenId < 100; tokenId++) {
+          const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
+          if (balance.gt(0)) {
+            badge4 = true;
+            break;
+          }
+        }
+      } catch (e) {
+        console.warn("Error checking OG Badge:", e);
+      }
 
+      // Populate grid
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
 
-        if (i === 0 && document.getElementById("badgeFourStatus").innerText.includes("Unlocked")) {
+        if (i === 0 && badge4) {
           const img = document.createElement("img");
           img.src = "apestrong.jpg";
           img.alt = "OG Holder Badge";
@@ -257,11 +269,11 @@
           slot.appendChild(video);
         } else if (i < badgeURIs.length + 2) {
           const badge = badgeURIs[i - 2];
-          if (badge) {
+          // Skip rendering metadata if it's the Royalty Pass (badge1)
+          if (badge && badge.name !== "NaNe The Ape & Rick Starr - Let's Ape" && badge.name !== "NaNa The Ape, Rick Starr - $HOES Anthem") {
             const img = document.createElement("img");
             img.src = badge.src;
-            img.alt = badge.name;
-            img.title = badge.name;
+            img.alt = "Mutant Record";
             slot.appendChild(img);
           } else {
             slot.innerText = "Empty Record Slot";
@@ -273,6 +285,7 @@
         badgeGrid.appendChild(slot);
       }
 
+      // Set badge statuses
       document.getElementById("badgeOneStatus").innerHTML = badge1
         ? "✅ <span class='unlocked'>Badge 1 Unlocked (any NFT from contractA)</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
@@ -282,23 +295,11 @@
       document.getElementById("badgeThreeStatus").innerHTML = badge3
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
-    }
+      document.getElementById("badgeFourStatus").innerHTML = badge4
+        ? "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>"
+        : "🔒 <span class='locked'>Badge 4 Locked</span>";
 
-    async function checkOGBadgeLoop(userAddress, contract) {
-      try {
-        for (let tokenId = 0; tokenId < 100; tokenId++) {
-          const balance = await contract.balanceOf(userAddress, tokenId);
-          if (balance.gt(0)) {
-            document.getElementById("badgeFourStatus").innerHTML =
-              "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>";
-            return;
-          }
-        }
-        document.getElementById("badgeFourStatus").innerHTML =
-          "🔒 <span class='locked'>Badge 4 Locked</span>";
-      } catch (e) {
-        console.warn("Error checking OG Badge:", e);
-      }
+      document.getElementById("loadingIndicator").style.display = "none";
     }
 
     function logout() {
