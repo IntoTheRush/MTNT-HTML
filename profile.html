@@ -222,7 +222,13 @@
               const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
               const metadata = await (await fetch(fixedUri)).json();
 
-              if (seenNames.has(metadata.name)) return;
+              if (seenNames.has(metadata.name)) const slot = document.createElement("div");
+            slot.className = "badge-slot";
+            const img = document.createElement("img");
+            img.src = "apestrong.jpg";
+            slot.appendChild(img);
+            document.getElementById("badgeGrid").appendChild(slot);
+            return;
               seenNames.add(metadata.name);
 
               const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
@@ -245,7 +251,7 @@
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
 
-      setTimeout(() => checkOGBadgeLoop(userAddress, contractOGInstance), 1000);
+      checkOGBadgeLoop(userAddress, contractOGInstance);
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -310,6 +316,7 @@
   </script>
 </body>
 </html>
+
 
 
 
