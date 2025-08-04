@@ -193,11 +193,11 @@
                 if (name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
                 if (label === 'A') badge1 = true;
                 if (name === "Royalty Pass") {
-  hasRoyaltyPass = true;
-}
-if (name !== "Royalty Pass") {
-  badgeURIs.push({ src: resolveIPFS(metadata.image), name });
-}
+                  hasRoyaltyPass = true;
+                }
+                if (name !== "Royalty Pass") {
+                  badgeURIs.push({ src: resolveIPFS(metadata.image), name });
+                }
               }
             } catch (e) {
               console.warn("Error with tokenId", tokenId);
