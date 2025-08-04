@@ -112,14 +112,6 @@
     #exitButton:hover {
       background-color: #444;
     }
-      @keyframes spinBadge {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(1080deg); }
-    }
-
-    .og-badge {
-      animation: spinBadge 2s ease-in-out;
-    }
   </style>
 </head>
 <body>
@@ -230,9 +222,7 @@
               const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
               const metadata = await (await fetch(fixedUri)).json();
 
-              if (seenNames.has(metadata.name)) {
-                return;
-              }
+              if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
 
               const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
@@ -255,7 +245,7 @@
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
 
-      checkOGBadgeLoop(userAddress, contractOGInstance);
+      setTimeout(() => checkOGBadgeLoop(userAddress, contractOGInstance), 1000);
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -271,7 +261,6 @@
         } else if (i === 3 && document.getElementById("badgeFourStatus").innerText.includes("Unlocked")) {
           const img = document.createElement("img");
           img.src = "apestrong.jpg";
-          img.classList.add("og-badge");
           slot.appendChild(img);
         } else if (i < badgeURIs.length) {
           const img = document.createElement("img");
