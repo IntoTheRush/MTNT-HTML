@@ -43,6 +43,20 @@
       margin-top: 20px;
     }
 
+    #progressBar {
+      width: 100%;
+      background-color: #333;
+      margin-top: 10px;
+      border: 1px solid #fff;
+    }
+
+    #progressBarFill {
+      height: 20px;
+      width: 0%;
+      background-color: #0f0;
+      transition: width 0.3s;
+    }
+
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
@@ -86,6 +100,7 @@
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
     <div id="loadingIndicator">Loading your records...</div>
+    <div id="progressBar"><div id="progressBarFill"></div></div>
 
     <h3>Your Records</h3>
     <div class="badge-grid" id="badgeGrid"></div>
@@ -101,7 +116,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -134,7 +149,6 @@
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
 
-      // Add sign-in message
       const message = "Sign this message to confirm your wallet for Mutant Records.";
       await signer.signMessage(message);
 
@@ -155,7 +169,14 @@
       const badgeURIs = [];
 
       async function scanContract(contract, tokenIds, contractLabel) {
-        for (let tokenId of tokenIds) {
+        let processed = 0;
+        const total = tokenIds.length;
+        const updateProgress = () => {
+          const percent = Math.round((processed / total) * 100);
+          document.getElementById("progressBarFill").style.width = percent + "%";
+        };
+
+        await Promise.all(tokenIds.map(async (tokenId) => {
           try {
             const owner = await contract.ownerOf(tokenId);
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
@@ -163,7 +184,7 @@
               const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
               const metadata = await (await fetch(fixedUri)).json();
 
-              if (seenNames.has(metadata.name)) continue;
+              if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
 
               const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
@@ -175,12 +196,14 @@
             }
           } catch (err) {
             console.warn(`Error with token ${tokenId} on contract ${contractLabel}:`, err);
+          } finally {
+            processed++;
+            updateProgress();
           }
-          if (badgeURIs.length >= 10) break;
-        }
+        }));
       }
 
-      await scanContract(contractAInstance, [...Array(70).keys()].map(i => i + 1), 'A');
+      await scanContract(contractAInstance, [...Array(69).keys()].map(i => i + 1), 'A');
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
 
