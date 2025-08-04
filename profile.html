@@ -21,14 +21,14 @@
 
     .badge-grid {
       display: grid;
-      grid-template-columns: repeat(5, 250px);
-      grid-gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
       margin-top: 20px;
     }
 
     .badge-slot {
-      width: 250px;
-      height: 250px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
       border: 2px solid #fff;
       display: flex;
       align-items: center;
@@ -250,6 +250,7 @@
   </script>
 </body>
 </html>
+
 
 
 
