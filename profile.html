@@ -120,12 +120,12 @@
   <a href="index.html" id="exitButton">Exit</a>
 
   <div id="loginSection">
-    <h1>Connect Wallet</h1>
+    <h1>Collectors Book</h1>
     <button id="loginButton">Login with MetaMask</button>
   </div>
 
   <div id="profileSection" style="display:none;">
-    <h2>Mutant Records collection by</h2>
+    <h2>Mutant Records collectibles by</h2>
     <p id="walletAddress"></p>
     <button onclick="logout()">Logout</button>
 
@@ -136,7 +136,7 @@
     <div id="loadingIndicator"><span id="loadingText">Loading your records...</span></div>
     <div id="progressBar"><div id="progressBarFill"></div></div>
 
-    <h3>Your Records</h3>
+    <h3>Mutant Records collectibles</h3>
     <div class="badge-grid" id="badgeGrid"></div>
   </div>
 
@@ -155,7 +155,7 @@
     ];
 
     const apechainParams = {
-      chainId: "0x8183", // 33139
+      chainId: "33139", // 33139
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
