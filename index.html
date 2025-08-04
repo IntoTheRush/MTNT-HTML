@@ -22,31 +22,38 @@
     body {
       background-color: #000;
       color: #fff;
+      padding-top: 70px;
     }
 
     .main-content {
       width: 100%;
     }
 
-    .navbar {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
+    .menu-bar {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
       background-color: #000;
       padding: 1rem 2rem;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      z-index: 10;
+      z-index: 1001;
+      display: flex;
+      gap: 2rem;
+      border-bottom: 1px solid #222;
     }
 
-    .navbar a {
-      color: #ffffff;
-      margin-left: 1.5rem;
+    .menu-bar a {
+      color: #fff;
       text-decoration: none;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .menu-bar a:hover {
+      background-color: #66ff00;
+      color: #000;
     }
 
     header {
@@ -124,7 +131,6 @@
       font-size: 1.5rem;
     }
 
-    /* Team Section */
     #team {
       padding: 2rem;
       text-align: center;
@@ -212,6 +218,15 @@
   </style>
 </head>
 <body>
+  <!-- Menu Bar -->
+  <nav class="menu-bar">
+    <a href="profile.html">Profile</a>
+    <a href="#mints">Mints</a>
+    <a href="#artists">Artists</a>
+    <a href="#team">The Team</a>
+    <a href="#impressum">Imprint</a>
+  </nav>
+
   <div class="main-content">
     <header>
       <div class="right-socialbar" style="position: fixed; right: 10px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1rem; z-index: 1000;">
@@ -243,59 +258,52 @@
       <h2>Our Artists</h2>
       <div class="swiper-container">
         <div class="swiper-wrapper">
-          <!-- Rick Starr -->
           <div class="swiper-slide">
             <img src="rickstarr.jpg" alt="Rick Starr" loading="lazy">
             <p>Rick Starr is a DJ and Soundengineer.</p>
             <div class="artist-socials">
-              <a href="#" aria-label="Spotify (Coming Soon)"><i class="fab fa-spotify"></i></a>
-              <a href="#" aria-label="Apple Music (Coming Soon)"><i class="fab fa-apple"></i></a>
-              <a href="#" aria-label="Instagram (Coming Soon)"><i class="fab fa-instagram"></i></a>
-              <a href="#" aria-label="TikTok (Coming Soon)"><i class="fab fa-tiktok"></i></a>
-              <a href="#" aria-label="Twitter (Coming Soon)"><i class="fab fa-x-twitter"></i></a>
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
-
-          <!-- NaNa The Ape -->
           <div class="swiper-slide">
             <img src="nanatheape.jpg" alt="NaNa The Ape" loading="lazy">
             <p>NaNa The Ape, founder of the Mutant Records collective.</p>
             <div class="artist-socials">
-              <a href="https://spotify.com/nanatheape" target="_blank" aria-label="Spotify"><i class="fab fa-spotify"></i></a>
-              <a href="https://music.apple.com/artist/nanatheape" target="_blank" aria-label="Apple Music"><i class="fab fa-apple"></i></a>
-              <a href="https://instagram.com/nanatheape" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-              <a href="https://tiktok.com/@nanatheape" target="_blank" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-              <a href="https://x.com/nanatheape" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+              <a href="https://spotify.com/nanatheape" target="_blank"><i class="fab fa-spotify"></i></a>
+              <a href="https://music.apple.com/artist/nanatheape" target="_blank"><i class="fab fa-apple"></i></a>
+              <a href="https://instagram.com/nanatheape" target="_blank"><i class="fab fa-instagram"></i></a>
+              <a href="https://tiktok.com/@nanatheape" target="_blank"><i class="fab fa-tiktok"></i></a>
+              <a href="https://x.com/nanatheape" target="_blank"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
-
-          <!-- Nicolas Mazeroi -->
           <div class="swiper-slide">
             <img src="nicolasmazeroi.jpg" alt="Nicolas Mazeroi" loading="lazy">
             <p>
-              Nicolas Mazeroi is a French artist. His musical style is Pop Soul tinged with Hip Hop and Creole groove, reflecting his Caribbean origins. As a singer-songwriter, he is appreciated for his authentic lyrics filled with joy, love, and life experience.
+              Nicolas Mazeroi. His musical style is Pop Soul tinged with Hip Hop and Creole groove, reflecting his Caribbean origins. As a singer-songwriter, he is appreciated for his authentic lyrics filled with joy, love, and life experience.
             </p>
             <div class="artist-socials">
-              <a href="#" aria-label="Spotify (Coming Soon)"><i class="fab fa-spotify"></i></a>
-              <a href="#" aria-label="Apple Music (Coming Soon)"><i class="fab fa-apple"></i></a>
-              <a href="#" aria-label="Instagram (Coming Soon)"><i class="fab fa-instagram"></i></a>
-              <a href="#" aria-label="TikTok (Coming Soon)"><i class="fab fa-tiktok"></i></a>
-              <a href="#" aria-label="Twitter (Coming Soon)"><i class="fab fa-x-twitter"></i></a>
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
-
-          <!-- GlassOnTheBeat -->
           <div class="swiper-slide">
             <img src="glassonthebeat.jpg" alt="GlassOnTheBeat" loading="lazy">
             <p>
               Southern California beat maker GlassOnBeat. Characterized by "gutter-like" elements, reflecting the raw and unfiltered experiences of his life. Embracing the 420 culture has further shaped his sound, infusing it with a laid-back, yet gritty vibe that resonates with authenticity.
             </p>
             <div class="artist-socials">
-              <a href="#" aria-label="Spotify (Coming Soon)"><i class="fab fa-spotify"></i></a>
-              <a href="#" aria-label="Apple Music (Coming Soon)"><i class="fab fa-apple"></i></a>
-              <a href="#" aria-label="Instagram (Coming Soon)"><i class="fab fa-instagram"></i></a>
-              <a href="#" aria-label="TikTok (Coming Soon)"><i class="fab fa-tiktok"></i></a>
-              <a href="#" aria-label="Twitter (Coming Soon)"><i class="fab fa-x-twitter"></i></a>
+              <a href="#"><i class="fab fa-spotify"></i></a>
+              <a href="#"><i class="fab fa-apple"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+              <a href="#"><i class="fab fa-tiktok"></i></a>
+              <a href="#"><i class="fab fa-x-twitter"></i></a>
             </div>
           </div>
         </div>
@@ -311,7 +319,7 @@
           <h3>NaNa The Ape</h3>
           <p>DJ, Producer & Founder</p>
           <div class="team-socials">
-            <a href="https://x.com/NaNaTheApe" target="_blank" aria-label="NaNa The Ape on X">
+            <a href="https://x.com/NaNaTheApe" target="_blank">
               <i class="fab fa-x-twitter"></i>
             </a>
           </div>
@@ -321,7 +329,7 @@
           <h3>Rick Starr</h3>
           <p>Sound Engineer, DJ</p>
           <div class="team-socials">
-            <a href="https://x.com/rickstarr031" target="_blank" aria-label="Rick Starr on X">
+            <a href="https://x.com/rickstarr031" target="_blank">
               <i class="fab fa-x-twitter"></i>
             </a>
           </div>
@@ -331,7 +339,7 @@
           <h3>$Shanananft</h3>
           <p>Musician & 3D Animator</p>
           <div class="team-socials">
-            <a href="https://x.com/rodolfo_shanana" target="_blank" aria-label="$Shanananft on X">
+            <a href="https://x.com/rodolfo_shanana" target="_blank">
               <i class="fab fa-x-twitter"></i>
             </a>
           </div>
@@ -370,5 +378,6 @@
   </script>
 </body>
 </html>
+
 
 
