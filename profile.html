@@ -196,7 +196,7 @@
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
 
@@ -235,24 +235,11 @@
         }));
       }
 
-      async function checkOGBadge() {
-        try {
-          for (let tokenId = 0; tokenId < 100; tokenId++) {
-            const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
-            if (balance.gt(0)) {
-              badge4 = true;
-              break;
-            }
-          }
-        } catch (err) {
-          console.warn("Error checking OG badge:", err);
-        }
-      }
-
       await scanContract(contractAInstance, [...Array(69).keys()].map(i => i + 1), 'A');
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
-      await checkOGBadge();
+
+      setTimeout(() => checkOGBadgeLoop(userAddress, contractOGInstance), 1000);
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -279,11 +266,24 @@
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
-      document.getElementById("badgeFourStatus").innerHTML = badge4
-        ? "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>"
-        : "🔒 <span class='locked'>Badge 4 Locked</span>";
-
       document.getElementById("loadingIndicator").style.display = "none";
+    }
+
+    async function checkOGBadgeLoop(userAddress, contractOGInstance) {
+      try {
+        for (let tokenId = 0; tokenId < 100; tokenId++) {
+          const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
+          if (balance.gt(0)) {
+            document.getElementById("badgeFourStatus").innerHTML =
+              "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>";
+            return;
+          }
+        }
+        document.getElementById("badgeFourStatus").innerHTML =
+          "🔒 <span class='locked'>Badge 4 Locked</span>";
+      } catch (err) {
+        console.warn("Error checking OG badge asynchronously:", err);
+      }
     }
 
     function logout() {
@@ -294,6 +294,7 @@
   </script>
 </body>
 </html>
+
 
 
 
