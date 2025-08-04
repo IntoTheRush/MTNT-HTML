@@ -156,7 +156,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183", // Hex for 33139
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -212,7 +212,7 @@
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
 
@@ -259,7 +259,8 @@
       await scanContract(contractBInstance, range(1, 420), 'B');
       await scanContract(contractBInstance, range(2800, 4000), 'B');
 
-      setTimeout(() => checkOGBadgeLoop(userAddress, contractOGInstance), 1000);
+      const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
+      let ogBadgeInserted = false;
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -273,17 +274,18 @@
           video.muted = true;
           video.playsInline = true;
           slot.appendChild(video);
-        } else if (i === 3 && document.getElementById("badgeFourStatus").innerText.includes("Unlocked")) {
-          const img = document.createElement("img");
-          img.src = "apestrong.jpg";
-          img.alt = "OG Holder Badge";
-          slot.appendChild(img);
         } else if (i < badgeURIs.length) {
           const img = document.createElement("img");
           img.src = badgeURIs[i].src;
           img.alt = badgeURIs[i].name || "NFT Image";
           slot.title = badgeURIs[i].name || "NFT";
           slot.appendChild(img);
+        } else if (ogBadgeUnlocked && !ogBadgeInserted) {
+          const img = document.createElement("img");
+          img.src = "apestrong.jpg";
+          img.alt = "OG Holder Badge";
+          slot.appendChild(img);
+          ogBadgeInserted = true;
         } else {
           slot.innerText = "Empty Record Slot";
         }
@@ -311,13 +313,15 @@
           if (balance.gt(0)) {
             document.getElementById("badgeFourStatus").innerHTML =
               "✅ <span class='unlocked'>OG Supporter</span>";
-            return;
+            return true;
           }
         }
         document.getElementById("badgeFourStatus").innerHTML =
           "🔒 <span class='locked'>Badge 4 Locked</span>";
+        return false;
       } catch (err) {
         console.warn("Error checking OG badge:", err);
+        return false;
       }
     }
 
@@ -329,6 +333,7 @@
   </script>
 </body>
 </html>
+
 
 
 
