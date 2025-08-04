@@ -12,6 +12,12 @@
       padding: 20px;
     }
 
+    header {
+      background: url('background.png') center center / cover no-repeat;
+      height: 200px;
+      margin-bottom: 20px;
+    }
+
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(5, 250px);
@@ -86,6 +92,7 @@
   </style>
 </head>
 <body>
+  <header></header>
   <div id="loginSection">
     <h1>Connect Wallet</h1>
     <button id="loginButton">Login with MetaMask</button>
@@ -116,15 +123,15 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
         symbol: "APE",
         decimals: 18
       },
-      rpcUrls: ["https://apechain.calderachain.xyz/http"],
-      blockExplorerUrls: ["https://apechain.calderaexplorer.xyz/"]
+      rpcUrls: ["https://apechain.drpc.org"],
+      blockExplorerUrls: ["https://apescan.io"]
     };
 
     async function switchToApeChain(provider) {
