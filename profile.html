@@ -85,7 +85,6 @@
     <div id="badgeOneStatus" class="badge-status"></div>
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
-    <div id="badgeFourStatus" class="badge-status"></div>
     <div id="loadingIndicator">Loading your records...</div>
 
     <h3>Your Records</h3>
@@ -95,23 +94,14 @@
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
-    const contractC = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07"; // ERC-1155 for Badge 4
 
     const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
     ];
 
-    const contractABI1155 = [
-      { "constant": true, "inputs": [
-        { "name": "account", "type": "address" },
-        { "name": "id", "type": "uint256" }
-      ], "name": "balanceOf", "outputs": [{ "name": "balance", "type": "uint256" }], "type": "function" },
-      { "constant": true, "inputs": [{ "name": "id", "type": "uint256" }], "name": "uri", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
-    ];
-
     const apechainParams = {
-      chainId: "33139", // fixed: must be hex string
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -154,9 +144,8 @@
 
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
-      const contractCInstance = new ethers.Contract(contractC, contractABI1155, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
 
@@ -186,27 +175,9 @@
         }
       }
 
-      await scanContract(contractAInstance, [...Array(70).keys()].map(i => i + 1), 'A'); // start at tokenId 1
+      await scanContract(contractAInstance, [...Array(70).keys()].map(i => i + 1), 'A');
       await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
       await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
-
-      try {
-        const badge4TokenId = 1;
-        const balance = await contractCInstance.balanceOf(userAddress, badge4TokenId);
-        if (balance.gt(0)) {
-          badge4 = true;
-          const uri = await contractCInstance.uri(badge4TokenId);
-          const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
-          const metadata = await (await fetch(fixedUri)).json();
-          const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
-          if (!seenNames.has(metadata.name)) {
-            seenNames.add(metadata.name);
-            badgeURIs.push(image);
-          }
-        }
-      } catch (err) {
-        console.warn("Badge 4 check failed:", err);
-      }
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
@@ -233,10 +204,6 @@
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
-      document.getElementById("badgeFourStatus").innerHTML = badge4
-        ? "✅ <span class='unlocked'>Badge 4 Unlocked (ERC-1155 token ID 1)</span>"
-        : "🔒 <span class='locked'>Badge 4 Locked</span>";
-
       document.getElementById("loadingIndicator").style.display = "none";
     }
 
@@ -248,6 +215,7 @@
   </script>
 </body>
 </html>
+
 
 
 
