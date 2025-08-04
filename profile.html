@@ -101,7 +101,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: {
         name: "APE",
@@ -133,6 +133,11 @@
 
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
+
+      // Add sign-in message
+      const message = "Sign this message to confirm your wallet for Mutant Records.";
+      await signer.signMessage(message);
+
       document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
 
       document.getElementById("loginSection").style.display = "none";
@@ -215,7 +220,6 @@
   </script>
 </body>
 </html>
-
 
 
 
