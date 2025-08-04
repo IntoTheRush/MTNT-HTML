@@ -244,10 +244,22 @@
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
-        if (i < badgeURIs.length) {
+        if (i === 0 && badge1) {
+          const video = document.createElement("video");
+          video.src = "royaltypass.MP4";
+          video.autoplay = true;
+          video.loop = true;
+          video.muted = true;
+          video.playsInline = true;
+          video.style.maxWidth = "100%";
+          video.style.maxHeight = "100%";
+          slot.appendChild(video);
+        } else if (i < badgeURIs.length) {
           const img = document.createElement("img");
           img.src = badgeURIs[i];
           slot.appendChild(img);
+        } else {
+          slot.innerText = "Empty Record Slot";
         } else {
           slot.innerText = "Empty Record Slot";
         }
@@ -294,6 +306,7 @@
   </script>
 </body>
 </html>
+
 
 
 
