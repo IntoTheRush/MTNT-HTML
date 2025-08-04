@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
@@ -13,11 +13,6 @@
       font-family: sans-serif;
       margin: 0;
       padding: 20px;
-    }
-    header {
-      background: url('background.png') center center / cover no-repeat;
-      height: 200px;
-      margin-bottom: 20px;
     }
     .badge-grid {
       display: grid;
@@ -50,7 +45,6 @@
     #loadingIndicator {
       display: none;
       font-size: 18px;
-      color: #fff;
       margin-top: 20px;
     }
     #progressBar {
@@ -68,47 +62,29 @@
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
-      color: #fff;
     }
-    .unlocked {
-      color: #0f0;
-    }
-    .locked {
-      color: #f00;
-    }
-    button {
+    .unlocked { color: #0f0; }
+    .locked { color: #f00; }
+    button, #exitButton {
       background-color: #222;
       color: #fff;
       border: 1px solid #fff;
       padding: 10px 16px;
       font-size: 16px;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #444;
-    }
-    #exitButton {
-      display: inline-block;
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #fff;
-      padding: 10px 16px;
-      font-size: 16px;
       text-decoration: none;
-      cursor: pointer;
-      margin-bottom: 20px;
     }
-    #exitButton:hover {
+    button:hover, #exitButton:hover {
       background-color: #444;
     }
   </style>
 </head>
 <body>
   <a href="index.html" id="exitButton">Exit</a>
-
   <div id="loginSection">
     <h1>Connect Wallet</h1>
     <button id="loginButton">Login with MetaMask</button>
+    <p id="walletWarning" style="color: red; display: none;">MetaMask not detected. Please install MetaMask to proceed.</p>
   </div>
 
   <div id="profileSection" style="display:none;">
@@ -142,23 +118,19 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
-      nativeCurrency: {
-        name: "APE",
-        symbol: "APE",
-        decimals: 18
-      },
+      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
       blockExplorerUrls: ["https://apescan.io"]
     };
 
-    function range(start, end) {
-      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-    }
-
     function resolveIPFS(uri) {
       return uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
+    }
+
+    function range(start, end) {
+      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
     }
 
     async function switchToApeChain(provider) {
@@ -168,76 +140,74 @@
         if (err.code === 4902) {
           await provider.send("wallet_addEthereumChain", [apechainParams]);
         } else {
-          alert("Failed to switch to ApeChain");
+          throw err;
         }
       }
     }
 
     async function connectWallet() {
-      if (!window.ethereum) return alert("Please install MetaMask!");
-
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);
-      await switchToApeChain(provider);
-
-      const signer = provider.getSigner();
-      const userAddress = await signer.getAddress();
-
-      await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
-      document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
-
-      document.getElementById("loginSection").style.display = "none";
-      document.getElementById("profileSection").style.display = "block";
-      document.getElementById("loadingIndicator").style.display = "block";
-
-      const badgeGrid = document.getElementById("badgeGrid");
-      badgeGrid.innerHTML = "";
-
-      const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
-      const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
-      const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
-
-      let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
-      const badgeURIs = [];
-      const seenNames = new Set();
-
-      async function scanContract(contract, tokenIds, label) {
-        let processed = 0;
-        const total = tokenIds.length;
-        const updateProgress = () => {
-          const percent = Math.round((processed / total) * 100);
-          document.getElementById("progressBarFill").style.width = percent + "%";
-        };
-
-        await Promise.all(tokenIds.map(async (tokenId) => {
-          try {
-            const owner = await contract.ownerOf(tokenId);
-            if (owner.toLowerCase() === userAddress.toLowerCase()) {
-              const uri = resolveIPFS(await contract.tokenURI(tokenId));
-              const metadata = await (await fetch(uri)).json();
-              if (!seenNames.has(metadata.name)) {
-                seenNames.add(metadata.name);
-                if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
-                if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
-                if (!badge1 && label === 'A') badge1 = true;
-                badgeURIs.push({ src: resolveIPFS(metadata.image), name: metadata.name });
-              }
-            }
-          } catch (e) {
-            console.warn("Error processing token:", tokenId, e);
-          } finally {
-            processed++;
-            updateProgress();
-          }
-        }));
+      if (typeof window.ethereum === 'undefined') {
+        document.getElementById("walletWarning").style.display = "block";
+        return;
       }
 
-      await scanContract(contractAInstance, range(1, 69), 'A');
-      await scanContract(contractBInstance, range(1, 420), 'B');
-      await scanContract(contractBInstance, range(2800, 4000), 'B');
-
-      // Check OG badge
       try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        await switchToApeChain(provider);
+
+        const signer = provider.getSigner();
+        const userAddress = await signer.getAddress();
+
+        await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
+        document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
+
+        document.getElementById("loginSection").style.display = "none";
+        document.getElementById("profileSection").style.display = "block";
+        document.getElementById("loadingIndicator").style.display = "block";
+
+        const badgeGrid = document.getElementById("badgeGrid");
+        badgeGrid.innerHTML = "";
+
+        const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
+        const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
+        const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
+
+        let badge1 = false, badge2 = false, badge3 = false, badge4 = false;
+        let hasRoyaltyPass = false;
+        const badgeURIs = [];
+        const seenNames = new Set();
+
+        async function scanContract(contract, tokenIds, label) {
+          for (const tokenId of tokenIds) {
+            try {
+              const owner = await contract.ownerOf(tokenId);
+              if (owner.toLowerCase() === userAddress.toLowerCase()) {
+                const uri = resolveIPFS(await contract.tokenURI(tokenId));
+                const metadata = await (await fetch(uri)).json();
+                const name = metadata.name;
+                if (seenNames.has(name)) continue;
+                seenNames.add(name);
+
+                if (name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
+                if (name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
+                if (label === 'A') badge1 = true;
+                if (name === "Royalty Pass") {
+                  hasRoyaltyPass = true;
+                } else {
+                  badgeURIs.push({ src: resolveIPFS(metadata.image), name });
+                }
+              }
+            } catch (e) {
+              console.warn("Error with tokenId", tokenId);
+            }
+          }
+        }
+
+        await scanContract(contractAInstance, range(1, 69), 'A');
+        await scanContract(contractBInstance, range(1, 420), 'B');
+        await scanContract(contractBInstance, range(2800, 4000), 'B');
+
         for (let tokenId = 0; tokenId < 100; tokenId++) {
           const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
           if (balance.gt(0)) {
@@ -245,61 +215,50 @@
             break;
           }
         }
-      } catch (e) {
-        console.warn("Error checking OG Badge:", e);
-      }
 
-      // Populate grid
-      for (let i = 0; i < 10; i++) {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-
-        if (i === 0 && badge4) {
+        if (badge4) {
+          const ogSlot = document.createElement("div");
+          ogSlot.className = "badge-slot";
           const img = document.createElement("img");
           img.src = "apestrong.jpg";
           img.alt = "OG Holder Badge";
-          slot.appendChild(img);
-        } else if (i === 1 && badge1) {
+          ogSlot.appendChild(img);
+          badgeGrid.appendChild(ogSlot);
+        }
+
+        if (hasRoyaltyPass) {
+          const passSlot = document.createElement("div");
+          passSlot.className = "badge-slot";
           const video = document.createElement("video");
           video.src = "royaltypass.MP4";
           video.autoplay = true;
           video.loop = true;
           video.muted = true;
           video.playsInline = true;
-          slot.appendChild(video);
-        } else if (i < badgeURIs.length + 2) {
-          const badge = badgeURIs[i - 2];
-          // Skip rendering metadata if it's the Royalty Pass (badge1)
-          if (badge && badge.name !== "NaNe The Ape & Rick Starr - Let's Ape" && badge.name !== "NaNa The Ape, Rick Starr - $HOES Anthem") {
-            const img = document.createElement("img");
-            img.src = badge.src;
-            img.alt = "Mutant Record";
-            slot.appendChild(img);
-          } else {
-            slot.innerText = "Empty Record Slot";
-          }
-        } else {
-          slot.innerText = "Empty Record Slot";
+          passSlot.appendChild(video);
+          badgeGrid.appendChild(passSlot);
         }
 
-        badgeGrid.appendChild(slot);
+        for (const badge of badgeURIs) {
+          const slot = document.createElement("div");
+          slot.className = "badge-slot";
+          const img = document.createElement("img");
+          img.src = badge.src;
+          img.alt = badge.name;
+          slot.appendChild(img);
+          badgeGrid.appendChild(slot);
+        }
+
+        document.getElementById("badgeOneStatus").innerHTML = badge1 ? "✅ <span class='unlocked'>Badge 1 Unlocked</span>" : "🔒 <span class='locked'>Badge 1 Locked</span>";
+        document.getElementById("badgeTwoStatus").innerHTML = badge2 ? "✅ <span class='unlocked'>Badge 2 Unlocked</span>" : "🔒 <span class='locked'>Badge 2 Locked</span>";
+        document.getElementById("badgeThreeStatus").innerHTML = badge3 ? "✅ <span class='unlocked'>Badge 3 Unlocked</span>" : "🔒 <span class='locked'>Badge 3 Locked</span>";
+        document.getElementById("badgeFourStatus").innerHTML = badge4 ? "✅ <span class='unlocked'>Badge 4 Unlocked</span>" : "🔒 <span class='locked'>Badge 4 Locked</span>";
+
+        document.getElementById("loadingIndicator").style.display = "none";
+      } catch (err) {
+        console.error("MetaMask connection failed:", err);
+        alert("Failed to connect to MetaMask. Please ensure it's installed and unlocked.");
       }
-
-      // Set badge statuses
-      document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any NFT from contractA)</span>"
-        : "🔒 <span class='locked'>Badge 1 Locked</span>";
-      document.getElementById("badgeTwoStatus").innerHTML = badge2
-        ? "✅ <span class='unlocked'>Badge 2 Unlocked (\"Let's Ape\")</span>"
-        : "🔒 <span class='locked'>Badge 2 Locked</span>";
-      document.getElementById("badgeThreeStatus").innerHTML = badge3
-        ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
-        : "🔒 <span class='locked'>Badge 3 Locked</span>";
-      document.getElementById("badgeFourStatus").innerHTML = badge4
-        ? "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>"
-        : "🔒 <span class='locked'>Badge 4 Locked</span>";
-
-      document.getElementById("loadingIndicator").style.display = "none";
     }
 
     function logout() {
