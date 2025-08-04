@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
@@ -44,7 +46,8 @@
       color: #fff;
     }
 
-    .badge-slot img, .badge-slot video {
+    .badge-slot img,
+    .badge-slot video {
       max-width: 100%;
       max-height: 100%;
     }
@@ -164,6 +167,15 @@
       blockExplorerUrls: ["https://apescan.io"]
     };
 
+    function range(start, end) {
+      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+    }
+
+    function resolveIPFS(uri) {
+      if (!uri.startsWith("ipfs://")) return uri;
+      return "https://ipfs.io/ipfs/" + uri.slice(7);
+    }
+
     async function switchToApeChain(provider) {
       try {
         await provider.send("wallet_switchEthereumChain", [{ chainId: apechainParams.chainId }]);
@@ -186,9 +198,7 @@
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
 
-      const message = "Sign this message to confirm your wallet for Mutant Records.";
-      await signer.signMessage(message);
-
+      await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
       document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
 
       document.getElementById("loginSection").style.display = "none";
@@ -209,6 +219,7 @@
       async function scanContract(contract, tokenIds, contractLabel) {
         let processed = 0;
         const total = tokenIds.length;
+
         const updateProgress = () => {
           const percent = Math.round((processed / total) * 100);
           document.getElementById("progressBarFill").style.width = percent + "%";
@@ -218,22 +229,25 @@
           try {
             const owner = await contract.ownerOf(tokenId);
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
-              const uri = await contract.tokenURI(tokenId);
-              const fixedUri = uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
-              const metadata = await (await fetch(fixedUri)).json();
+              const uriRaw = await contract.tokenURI(tokenId);
+              const uri = resolveIPFS(uriRaw);
+
+              const response = await fetch(uri);
+              if (!response.ok) throw new Error("Metadata fetch failed");
+              const metadata = await response.json();
 
               if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
 
-              const image = metadata.image.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + metadata.image.slice(7) : metadata.image;
-              badgeURIs.push(image);
+              const image = resolveIPFS(metadata.image);
+              badgeURIs.push({ src: image, name: metadata.name });
 
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
               if (!badge1 && contractLabel === 'A') badge1 = true;
             }
           } catch (err) {
-            console.warn(`Error with token ${tokenId} on contract ${contractLabel}:`, err);
+            console.warn(`Error on token ${tokenId} of contract ${contractLabel}:`, err);
           } finally {
             processed++;
             updateProgress();
@@ -241,15 +255,16 @@
         }));
       }
 
-      await scanContract(contractAInstance, [...Array(69).keys()].map(i => i + 1), 'A');
-      await scanContract(contractBInstance, [...Array(420).keys()].map(i => i + 1), 'B');
-      await scanContract(contractBInstance, [...Array(1201).keys()].map(i => i + 2800), 'B');
+      await scanContract(contractAInstance, range(1, 69), 'A');
+      await scanContract(contractBInstance, range(1, 420), 'B');
+      await scanContract(contractBInstance, range(2800, 4000), 'B');
 
       setTimeout(() => checkOGBadgeLoop(userAddress, contractOGInstance), 1000);
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
+
         if (i === 0 && badge1) {
           const video = document.createElement("video");
           video.src = "royaltypass.MP4";
@@ -261,14 +276,18 @@
         } else if (i === 3 && document.getElementById("badgeFourStatus").innerText.includes("Unlocked")) {
           const img = document.createElement("img");
           img.src = "apestrong.jpg";
+          img.alt = "OG Holder Badge";
           slot.appendChild(img);
         } else if (i < badgeURIs.length) {
           const img = document.createElement("img");
-          img.src = badgeURIs[i];
+          img.src = badgeURIs[i].src;
+          img.alt = badgeURIs[i].name || "NFT Image";
+          slot.title = badgeURIs[i].name || "NFT";
           slot.appendChild(img);
         } else {
           slot.innerText = "Empty Record Slot";
         }
+
         badgeGrid.appendChild(slot);
       }
 
@@ -298,7 +317,7 @@
         document.getElementById("badgeFourStatus").innerHTML =
           "🔒 <span class='locked'>Badge 4 Locked</span>";
       } catch (err) {
-        console.warn("Error checking OG badge asynchronously:", err);
+        console.warn("Error checking OG badge:", err);
       }
     }
 
@@ -310,6 +329,7 @@
   </script>
 </body>
 </html>
+
 
 
 
