@@ -292,7 +292,7 @@
       }
 
       document.getElementById("badgeOneStatus").innerHTML = badge1
-        ? "✅ <span class='unlocked'>Badge 1 Unlocked (any NFT from contractA)</span>"
+        ? "✅ <span class='unlocked'>Royalty Music Pass Unlock</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
 
       document.getElementById("badgeTwoStatus").innerHTML = badge2
@@ -310,7 +310,7 @@
           const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
           if (balance.gt(0)) {
             document.getElementById("badgeFourStatus").innerHTML =
-              "✅ <span class='unlocked'>Badge 4 Unlocked (OG Holder)</span>";
+              "✅ <span class='unlocked'>OG Supporter</span>";
             return;
           }
         }
