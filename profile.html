@@ -6,6 +6,7 @@
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
+    /* [Same styles as you provided — omitted for brevity in this section] */
     body {
       background: url('background.png') center center / cover no-repeat;
       background-attachment: fixed;
@@ -134,7 +135,6 @@
     <div id="badgeThreeStatus" class="badge-status"></div>
     <div id="badgeFourStatus" class="badge-status"></div>
     <div id="badgeFiveStatus" class="badge-status"></div>
-
     <div id="loadingIndicator"><span id="loadingText">Loading your records...</span></div>
     <div id="progressBar"><div id="progressBarFill"></div></div>
 
@@ -146,7 +146,7 @@
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
     const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
-    const contractNew1155 = "0x01ae95520c8eedde650502dd0958e4e4f50fae83";
+    const inkspireContractAddress = "0x00d48b06b39f76e45966ff11b318059620ac470b";
 
     const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
@@ -154,12 +154,11 @@
     ];
 
     const contractABI1155 = [
-      { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" },
-      { "constant": true, "inputs": [{ "name": "id", "type": "uint256" }], "name": "uri", "outputs": [{ "name": "", "type": "string" }], "type": "function" }
+      { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "33139", // 33139 in hex
       chainName: "ApeChain",
       nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
@@ -227,10 +226,9 @@
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
-      const contractNew1155Instance = new ethers.Contract(contractNew1155, contractABI1155, provider);
+      const inkspireInstance = new ethers.Contract(inkspireContractAddress, contractABI721, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false;
-      let badgeNew1155Shown = false;
+      let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
       const seenNames = new Set();
       const badgeURIs = [];
 
@@ -249,14 +247,11 @@
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
               const uriRaw = await contract.tokenURI(tokenId);
               const uri = resolveIPFS(uriRaw);
-
               const response = await fetch(uri);
-              if (!response.ok) throw new Error("Metadata fetch failed");
+              if (!response.ok) return;
               const metadata = await response.json();
-
               if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
-
               const image = resolveIPFS(metadata.image);
               badgeURIs.push({ src: image, name: metadata.name });
 
@@ -264,40 +259,18 @@
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
               if (!badge1 && contractLabel === 'A') badge1 = true;
             }
-          } catch (err) {
-            console.warn(`Error on token ${tokenId} of contract ${contractLabel}:`, err);
-          } finally {
-            processed++;
-            updateProgress();
-          }
+          } catch (_) {} finally { processed++; updateProgress(); }
         }));
       }
 
+      // Scans
       await scanContract(contractAInstance, range(1, 69), 'A');
       await scanContract(contractBInstance, range(1, 420), 'B');
-      await scanContract(contractBInstance, range(2944, 3364), 'B');
+      await scanContract(contractBInstance, range(2800, 4000), 'B');
 
-      for (let tokenId = 0; tokenId < 149; tokenId++) {
-        try {
-          const balance = await contractNew1155Instance.balanceOf(userAddress, tokenId);
-          if (balance.gt(0)) {
-            const uriRaw = await contractNew1155Instance.uri(tokenId);
-            const uri = resolveIPFS(uriRaw);
-
-            const response = await fetch(uri);
-            if (!response.ok) throw new Error("Metadata fetch failed");
-            const metadata = await response.json();
-
-            const image = resolveIPFS(metadata.image);
-            badgeURIs.push({ src: image, name: metadata.name });
-
-            badgeNew1155Shown = true;
-            break;
-          }
-        } catch (err) {
-          console.warn(`Error scanning token ${tokenId} from new ERC-1155 contract:`, err);
-        }
-      }
+      // INKSPIRE SCAN
+      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
+      if (badgeURIs.some(b => b.name.toLowerCase().includes("inkspire"))) badge5 = true;
 
       const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
       let ogBadgeInserted = false;
@@ -348,9 +321,9 @@
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
-      document.getElementById("badgeFiveStatus").innerHTML = badgeNew1155Shown
-        ? "✅ <span class='unlocked'>Special 1155 Badge Unlocked</span>"
-        : "🔒 <span class='locked'>Badge 5 Locked</span>";
+      document.getElementById("badgeFiveStatus").innerHTML = badge5
+        ? "✅ <span class='unlocked'>INKSPIRE1 NFT Owned</span>"
+        : "🔒 <span class='locked'>INKSPIRE1 NFT Not Found</span>";
     }
 
     async function checkOGBadgeLoop(userAddress, contractOGInstance) {
@@ -372,14 +345,15 @@
       }
     }
 
+    document.getElementById("loginButton").addEventListener("click", connectWallet);
+
     function logout() {
       location.reload();
     }
-
-    document.getElementById("loginButton").onclick = connectWallet;
   </script>
 </body>
 </html>
+
 
 
 
