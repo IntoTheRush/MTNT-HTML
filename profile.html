@@ -14,11 +14,6 @@
       margin: 0;
       padding: 20px;
     }
-    header {
-      background: url('background.png') center center / cover no-repeat;
-      height: 200px;
-      margin-bottom: 20px;
-    }
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -66,7 +61,6 @@
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
-      color: #fff;
     }
     .unlocked { color: #0f0; }
     .locked { color: #f00; }
@@ -116,6 +110,7 @@
     <h3>Your Records</h3>
     <div class="badge-grid" id="badgeGrid"></div>
   </div>
+
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
@@ -131,7 +126,7 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
@@ -190,6 +185,13 @@
       let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
+      let processed = 0;
+      const total = 13; // 6 A tokens + 7 B tokens
+
+      function updateProgressBar() {
+        const percent = Math.round((processed / total) * 100);
+        document.getElementById("progressBarFill").style.width = percent + "%";
+      }
 
       async function scanContract(contract, tokenIds, label) {
         for (const tokenId of tokenIds) {
@@ -206,6 +208,8 @@
               if (!badge1 && label === 'A') badge1 = true;
             }
           } catch (e) { console.warn(`Token ${tokenId} skipped`, e); }
+          processed++;
+          updateProgressBar();
         }
       }
 
@@ -261,7 +265,10 @@
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
     }
 
-    function logout() { location.reload(); }
+    function logout() {
+      location.reload();
+    }
+
     document.getElementById("loginButton").onclick = connectWallet;
   </script>
 </body>
