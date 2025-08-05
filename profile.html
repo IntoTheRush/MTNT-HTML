@@ -271,9 +271,9 @@
         }));
       }
 
-      await scanContract(contractAInstance, range(1, 69), 'A');
-      await scanContract(contractBInstance, range(1, 420), 'B');
-      await scanContract(contractBInstance, range(2800, 4000), 'B');
+      await scanContract(contractAInstance, [1, 2, 3, 4, 5, 10, 15, 20], 'A');
+      await scanContract(contractBInstance, [1, 10, 20, 69, 77, 88, 99, 111], 'B');
+      await scanContract(contractBInstance, [2800, 2842, 2900, 3000, 3333, 3700], 'B');
 
       const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
       let ogBadgeInserted = false;
