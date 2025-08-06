@@ -46,10 +46,6 @@
       color: #fff;
     }
 
-    .badge-slot.empty {
-      display: none;
-    }
-
     .badge-slot img,
     .badge-slot video {
       max-width: 100%;
@@ -147,6 +143,71 @@
     <h3>DripHeadz Music</h3>
     <div class="badge-grid" id="inkspireGrid"></div>
   </div>
+
+  <script>
+    const badgeGrid = document.getElementById("badgeGrid");
+    const inkspireGrid = document.getElementById("inkspireGrid");
+
+    function addBadgeSlot(container, contentElement) {
+      const slot = document.createElement("div");
+      slot.className = "badge-slot";
+      slot.appendChild(contentElement);
+      container.appendChild(slot);
+    }
+
+    async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs, inkspireURIs }) {
+      badgeGrid.innerHTML = "";
+      inkspireGrid.innerHTML = "";
+
+      if (badge1) {
+        const video = document.createElement("video");
+        video.src = "royaltypass.MP4";
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        addBadgeSlot(badgeGrid, video);
+      }
+
+      if (badge2) {
+        const match = badgeURIs.find(b => b.name.includes("Let's Ape"));
+        if (match) {
+          const img = document.createElement("img");
+          img.src = match.src;
+          img.alt = match.name;
+          img.title = match.name;
+          addBadgeSlot(badgeGrid, img);
+        }
+      }
+
+      if (badge3) {
+        const match = badgeURIs.find(b => b.name.includes("$HOES Anthem"));
+        if (match) {
+          const img = document.createElement("img");
+          img.src = match.src;
+          img.alt = match.name;
+          img.title = match.name;
+          addBadgeSlot(badgeGrid, img);
+        }
+      }
+
+      if (ogBadgeUnlocked) {
+        const img = document.createElement("img");
+        img.src = "apestrong.jpg";
+        img.alt = "OG Holder Badge";
+        img.title = "OG Holder Badge";
+        addBadgeSlot(badgeGrid, img);
+      }
+
+      inkspireURIs.forEach((item) => {
+        const img = document.createElement("img");
+        img.src = item.src;
+        img.alt = item.name || "Inkspire NFT";
+        img.title = item.name || "Inkspire NFT";
+        addBadgeSlot(inkspireGrid, img);
+      });
+    }
+  </script>
 
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
