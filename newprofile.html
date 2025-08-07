@@ -149,6 +149,15 @@
       const accounts = await web3.eth.getAccounts();
       const userAddress = accounts[0];
 
+      // ✅ Add sign message for wallet confirmation
+      const message = "Sign this message to confirm your wallet for Mutant Records.";
+      try {
+        await web3.eth.personal.sign(message, userAddress);
+      } catch (err) {
+        alert("Signature declined. Wallet not connected.");
+        return;
+      }
+
       document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
       document.getElementById("loginSection").style.display = "none";
       document.getElementById("profileSection").style.display = "block";
@@ -210,7 +219,6 @@
       document.getElementById("badgeFourStatus").innerHTML = ogBadgeUnlocked ? "✅ <span class='unlocked'>OG Supporter</span>" : "🔒 <span class='locked'>Badge 4 Locked</span>";
       document.getElementById("badgeFiveStatus").innerHTML = badge5 ? "✅ <span class='unlocked'>DripHeadz</span>" : "🔒 <span class='locked'>Dripheadz NFT Not Found</span>";
 
-      // Render badges
       if (badge1) {
         const video = document.createElement("video");
         video.src = "royaltypass.MP4";
@@ -257,3 +265,4 @@
   </script>
 </body>
 </html>
+
