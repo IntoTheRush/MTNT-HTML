@@ -133,87 +133,17 @@
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
     <div id="badgeFourStatus" class="badge-status"></div>
-    <div id="badgeFiveStatus" class="badge-status"></div>
     <div id="loadingIndicator"><span id="loadingText">Loading your records...</span></div>
     <div id="progressBar"><div id="progressBarFill"></div></div>
 
     <h3>Mutant Records collectibles</h3>
     <div class="badge-grid" id="badgeGrid"></div>
-
-    <h3>DripHeadz Music</h3>
-    <div class="badge-grid" id="inkspireGrid"></div>
   </div>
-
-  <script>
-    const badgeGrid = document.getElementById("badgeGrid");
-    const inkspireGrid = document.getElementById("inkspireGrid");
-
-    function addBadgeSlot(container, contentElement) {
-      const slot = document.createElement("div");
-      slot.className = "badge-slot";
-      slot.appendChild(contentElement);
-      container.appendChild(slot);
-    }
-
-    async function renderBadges({ badge1, badge2, badge3, ogBadgeUnlocked, badgeURIs, inkspireURIs }) {
-      badgeGrid.innerHTML = "";
-      inkspireGrid.innerHTML = "";
-
-      if (badge1) {
-        const video = document.createElement("video");
-        video.src = "royaltypass.MP4";
-        video.autoplay = true;
-        video.loop = true;
-        video.muted = true;
-        video.playsInline = true;
-        addBadgeSlot(badgeGrid, video);
-      }
-
-      if (badge2) {
-        const match = badgeURIs.find(b => b.name.includes("Let's Ape"));
-        if (match) {
-          const img = document.createElement("img");
-          img.src = match.src;
-          img.alt = match.name;
-          img.title = match.name;
-          addBadgeSlot(badgeGrid, img);
-        }
-      }
-
-      if (badge3) {
-        const match = badgeURIs.find(b => b.name.includes("$HOES Anthem"));
-        if (match) {
-          const img = document.createElement("img");
-          img.src = match.src;
-          img.alt = match.name;
-          img.title = match.name;
-          addBadgeSlot(badgeGrid, img);
-        }
-      }
-
-      if (ogBadgeUnlocked) {
-        const img = document.createElement("img");
-        img.src = "apestrong.jpg";
-        img.alt = "OG Holder Badge";
-        img.title = "OG Holder Badge";
-        addBadgeSlot(badgeGrid, img);
-      }
-
-      inkspireURIs.forEach((item) => {
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.alt = item.name || "Inkspire NFT";
-        img.title = item.name || "Inkspire NFT";
-        addBadgeSlot(inkspireGrid, img);
-      });
-    }
-  </script>
 
   <script>
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
     const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
-    const inkspireContractAddress = "0x00d48b06b39f76e45966ff11b318059620ac470b";
 
     const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
@@ -225,9 +155,13 @@
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "33139", // 33139
       chainName: "ApeChain",
-      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
+      nativeCurrency: {
+        name: "APE",
+        symbol: "APE",
+        decimals: 18
+      },
       rpcUrls: ["https://apechain.drpc.org"],
       blockExplorerUrls: ["https://apescan.io"]
     };
@@ -270,9 +204,10 @@
       document.getElementById("profileSection").style.display = "block";
       document.getElementById("loadingIndicator").style.display = "block";
 
+      // Funny rotating loading text
       const loadingMessages = [
         "🧠 Scanning ApeChain...",
-        "🎷 Looking for music in the blockchain...",
+        "🎧 Looking for music in the blockchain...",
         "🙏 Checking the church...",
         "🦍 Ape monks decoding grooves...",
         "🎶 Tuning vinyl in hyperspace...",
@@ -288,19 +223,15 @@
       }, 2000);
 
       const badgeGrid = document.getElementById("badgeGrid");
-      const inkspireGrid = document.getElementById("inkspireGrid");
       badgeGrid.innerHTML = "";
-      inkspireGrid.innerHTML = "";
 
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
-      const inkspireInstance = new ethers.Contract(inkspireContractAddress, contractABI721, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
-      const inkspireURIs = [];
 
       async function scanContract(contract, tokenIds, contractLabel) {
         let processed = 0;
@@ -317,38 +248,38 @@
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
               const uriRaw = await contract.tokenURI(tokenId);
               const uri = resolveIPFS(uriRaw);
+
               const response = await fetch(uri);
-              if (!response.ok) return;
+              if (!response.ok) throw new Error("Metadata fetch failed");
               const metadata = await response.json();
+
               if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
-              const image = resolveIPFS(metadata.image);
 
-              if (contractLabel === 'INKSPIRE') {
-                inkspireURIs.push({ src: image, name: metadata.name });
-              } else {
-                badgeURIs.push({ src: image, name: metadata.name });
-              }
+              const image = resolveIPFS(metadata.image);
+              badgeURIs.push({ src: image, name: metadata.name });
 
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
               if (!badge1 && contractLabel === 'A') badge1 = true;
             }
-          } catch (_) {} finally { processed++; updateProgress(); }
+          } catch (err) {
+            console.warn(`Error on token ${tokenId} of contract ${contractLabel}:`, err);
+          } finally {
+            processed++;
+            updateProgress();
+          }
         }));
       }
 
       await scanContract(contractAInstance, range(1, 69), 'A');
       await scanContract(contractBInstance, range(1, 420), 'B');
       await scanContract(contractBInstance, range(2800, 4000), 'B');
-      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
-
-      if (inkspireURIs.length > 0) badge5 = true;
 
       const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
       let ogBadgeInserted = false;
 
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
 
@@ -379,17 +310,6 @@
         badgeGrid.appendChild(slot);
       }
 
-      inkspireURIs.forEach((item) => {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.alt = item.name || "Inkspire NFT";
-        img.title = item.name || "Inkspire NFT";
-        slot.appendChild(img);
-        inkspireGrid.appendChild(slot);
-      });
-
       clearInterval(loadingInterval);
       document.getElementById("loadingIndicator").style.display = "none";
 
@@ -404,10 +324,6 @@
       document.getElementById("badgeThreeStatus").innerHTML = badge3
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
-
-      document.getElementById("badgeFiveStatus").innerHTML = badge5
-        ? "✅ <span class='unlocked'>DripHeadz</span>"
-        : "🔒 <span class='locked'>Dripheadz NFT Not Found</span>";
     }
 
     async function checkOGBadgeLoop(userAddress, contractOGInstance) {
@@ -428,16 +344,7 @@
         return false;
       }
     }
-
-    document.getElementById("loginButton").addEventListener("click", connectWallet);
-    function logout() {
-      location.reload();
-    }
-  </script>
-</body>
 </html>
-
-
 
 
 
