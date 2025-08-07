@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mutant Records Collection</title>
-  <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <style>
     body {
       background: url('background.png') center center / cover no-repeat;
@@ -14,59 +15,11 @@
       margin: 0;
       padding: 20px;
     }
-
-    .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
+    header {
+      background: url('background.png') center center / cover no-repeat;
+      height: 200px;
+      margin-bottom: 20px;
     }
-
-    .badge-slot {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border: 2px solid #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      background-color: #000;
-      color: #fff;
-    }
-
-    .badge-slot img,
-    .badge-slot video {
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    #loadingIndicator {
-      font-size: 18px;
-      margin-top: 20px;
-    }
-
-    #progressBar {
-      width: 100%;
-      background-color: #333;
-      margin-top: 10px;
-      border: 1px solid #fff;
-    }
-
-    #progressBarFill {
-      height: 20px;
-      width: 0%;
-      background-color: #00ffff;
-      transition: width 0.3s;
-    }
-
-    .badge-status {
-      margin: 6px 0;
-      font-weight: bold;
-    }
-
-    .unlocked { color: #0f0; }
-    .locked { color: #f00; }
-
     button {
       background-color: #222;
       color: #fff;
@@ -74,301 +27,202 @@
       padding: 10px 16px;
       font-size: 16px;
       cursor: pointer;
+      margin: 6px;
     }
-
     button:hover {
-      background-color: #444;
-    }
-
-    #exitButton {
-      background-color: #222;
-      color: #fff;
-      border: 1px solid #fff;
-      padding: 10px 16px;
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 20px;
-    }
-
-    #exitButton:hover {
       background-color: #444;
     }
   </style>
 </head>
 <body>
-  <a href="index.html" id="exitButton">Exit</a>
-
   <div id="loginSection">
     <h1>Collectors Book</h1>
-    <button id="loginButton" onclick="connect()">Login with MetaMask</button>
+    <button id="loginMetaMask">Login with MetaMask</button>
+    <button id="loginWalletConnect">Login with WalletConnect</button>
   </div>
 
   <div id="profileSection" style="display:none;">
     <h2>Mutant Records collectibles by</h2>
     <p id="walletAddress"></p>
-    <button onclick="location.reload()">Logout</button>
+    <button onclick="logout()">Logout</button>
 
-    <div id="badgeOneStatus" class="badge-status"></div>
-    <div id="badgeTwoStatus" class="badge-status"></div>
-    <div id="badgeThreeStatus" class="badge-status"></div>
-    <div id="badgeFourStatus" class="badge-status"></div>
-    <div id="badgeFiveStatus" class="badge-status"></div>
-
-    <div id="loadingIndicator" style="display: none;">
-      <span id="loadingText">Loading your records...</span>
-    </div>
-    <div id="progressBar"><div id="progressBarFill"></div></div>
-
-    <h3>Mutant Records collectibles</h3>
+    <div id="badgeStatusContainer"></div>
     <div class="badge-grid" id="badgeGrid"></div>
-
-    <h3>DripHeadz Music</h3>
     <div class="badge-grid" id="inkspireGrid"></div>
   </div>
 
   <script>
-    const loadingMessages = [
-      "🧠 Scanning ApeChain...",
-      "🎷 Looking for music in the blockchain...",
-      "🙏 Checking the church...",
-      "🦍 Ape monks decoding grooves...",
-      "🎶 Tuning vinyl in hyperspace...",
-      "🍌 Spinning bananas into beats...",
-      "🔊 Listening for lost records...",
-      "🧬 Synthesizing rare sounds..."
+    const apechainParams = {
+      chainId: "0x8183", // 33139 in hex
+      chainName: "ApeChain",
+      nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
+      rpcUrls: ["https://apechain.drpc.org"],
+      blockExplorerUrls: ["https://apescan.io"]
+    };
+
+    const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
+    const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
+    const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
+    const inkspireContractAddress = "0x00d48b06b39f76e45966ff11b318059620ac470b";
+
+    const contractABI721 = [
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
+      { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
     ];
-    let messageIndex = 0;
-    let intervalId;
-    const progressBarFill = document.getElementById("progressBarFill");
 
-    function startLoadingAnimation() {
-      document.getElementById("loadingIndicator").style.display = "block";
-      messageIndex = 0;
-      intervalId = setInterval(() => {
-        document.getElementById("loadingText").innerText = loadingMessages[messageIndex % loadingMessages.length];
-        messageIndex++;
-      }, 2000);
-    }
+    const contractABI1155 = [
+      { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
+    ];
 
-    function updateProgressBar(processed, total) {
-      const percent = Math.round((processed / total) * 100);
-      progressBarFill.style.width = percent + "%";
+    function resolveIPFS(uri) {
+      if (!uri.startsWith("ipfs://")) return uri;
+      return "https://ipfs.io/ipfs/" + uri.slice(7);
     }
 
     function range(start, end) {
       return Array.from({ length: end - start + 1 }, (_, i) => i + start);
     }
 
-    function resolveIPFS(uri) {
-      return uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
-    }
-
-    async function switchToApeChain() {
+    async function switchToApeChain(provider) {
       try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "33139" }] // 33139
-        });
+        await provider.send("wallet_switchEthereumChain", [{ chainId: apechainParams.chainId }]);
       } catch (err) {
         if (err.code === 4902) {
-          await window.ethereum.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId: "33139",
-              chainName: "ApeChain",
-              nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
-              rpcUrls: ["https://apechain.drpc.org"],
-              blockExplorerUrls: ["https://apescan.io"]
-            }]
-          });
+          await provider.send("wallet_addEthereumChain", [apechainParams]);
         } else {
-          alert("Could not switch to ApeChain");
+          alert("Failed to switch to ApeChain");
+          throw err;
         }
       }
     }
 
-    async function scanContract(contract, tokenIds, label, userAddress, badgeURIs, inkspireURIs, seenNames) {
-  const promises = tokenIds.map(async (id, index) => {
-    try {
-      const owner = await contract.methods.ownerOf(id).call();
-      if (owner.toLowerCase() === userAddress.toLowerCase()) {
-        const uri = resolveIPFS(await contract.methods.tokenURI(id).call());
-        const metadata = await fetch(uri).then(res => res.json());
-        if (seenNames.has(metadata.name)) return;
-        seenNames.add(metadata.name);
-        const image = resolveIPFS(metadata.image);
-        if (label !== 'INKSPIRE') {
-          badgeURIs.push({ src: image, name: metadata.name });
-          if (metadata.name.includes("Let's Ape")) badge2 = true;
-          if (metadata.name.includes("$HOES Anthem")) badge3 = true;
-          if (!badge1 && label === 'A') badge1 = true;
-        } else {
-          inkspireURIs.push({ src: image, name: metadata.name });
-        }
-      }
-    } catch {}
-    updateProgressBar(index + 1, tokenIds.length);
-  });
-  await Promise.all(promises);
-}
+    async function connectMetaMask() {
+      if (!window.ethereum) return alert("MetaMask is not installed!");
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      await switchToApeChain(provider);
+      const signer = provider.getSigner();
+      await onWalletConnected(provider, signer);
+    }
 
-async function checkOGBadge(userAddress, contractOGInst) {
-  for (let i = 0; i < 100; i++) {
-    try {
-      const balance = await contractOGInst.methods.balanceOf(userAddress, i).call();
-      if (balance > 0) return true;
-    } catch {}
-  }
-  return false;
-}
+    const walletConnectProvider = new WalletConnectProvider.default({
+      rpc: { 33139: "https://apechain.drpc.org" },
+      chainId: 33139
+    });
 
-async function connect() {
-  if (!window.ethereum) return alert("Please install MetaMask!");
+    async function connectWalletConnect() {
+      await walletConnectProvider.enable();
+      const provider = new ethers.providers.Web3Provider(walletConnectProvider);
+      const signer = provider.getSigner();
+      await onWalletConnected(provider, signer);
+    }
 
-  const web3 = new Web3(window.ethereum);
-  await window.ethereum.request({ method: 'eth_requestAccounts' });
-  await switchToApeChain();
+    async function onWalletConnected(provider, signer) {
+      const userAddress = await signer.getAddress();
+      await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
+      document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
+      document.getElementById("loginSection").style.display = "none";
+      document.getElementById("profileSection").style.display = "block";
 
-  const accounts = await web3.eth.getAccounts();
-  const userAddress = accounts[0];
+      await loadBadges(provider, userAddress);
+    }
 
-  const message = "Sign this message to confirm your wallet for Mutant Records.";
-  try {
-    await web3.eth.personal.sign(message, userAddress);
-  } catch (err) {
-    alert("Signature declined. Wallet not connected.");
-    return;
-  }
+    async function loadBadges(provider, userAddress) {
+      const badgeGrid = document.getElementById("badgeGrid");
+      const inkspireGrid = document.getElementById("inkspireGrid");
+      badgeGrid.innerHTML = "";
+      inkspireGrid.innerHTML = "";
 
-  document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
-  document.getElementById("loginSection").style.display = "none";
-  document.getElementById("profileSection").style.display = "block";
-  document.getElementById("loadingIndicator").style.display = "block";
+      const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
+      const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
+      const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
+      const inkspireInstance = new ethers.Contract(inkspireContractAddress, contractABI721, provider);
 
-  startLoadingAnimation();
+      let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
+      const seenNames = new Set();
+      const badgeURIs = [], inkspireURIs = [];
 
-  const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
-  const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
-  const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
-  const inkspireContract = "0x00d48b06b39f76e45966ff11b318059620ac470b";
-
-  const contractABI721 = [
-    { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
-    { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
-  ];
-
-  const contractABI1155 = [
-    { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
-  ];
-
-  const badgeGrid = document.getElementById("badgeGrid");
-  const inkspireGrid = document.getElementById("inkspireGrid");
-  badgeGrid.innerHTML = "";
-  inkspireGrid.innerHTML = "";
-
-  const contractAInst = new web3.eth.Contract(contractABI721, contractA);
-  const contractBInst = new web3.eth.Contract(contractABI721, contractB);
-  const contractOGInst = new web3.eth.Contract(contractABI1155, contractOG);
-  const inkspireInst = new web3.eth.Contract(contractABI721, inkspireContract);
-
-  badge1 = false, badge2 = false, badge3 = false, badge5 = false;
-  const seenNames = new Set();
-  const badgeURIs = [], inkspireURIs = [];
-
-  await scanContract(contractAInst, range(1, 69), 'A', userAddress, badgeURIs, inkspireURIs, seenNames);
-  await scanContract(contractBInst, range(1, 420), 'B', userAddress, badgeURIs, inkspireURIs, seenNames);
-  await scanContract(contractBInst, range(2800, 4000), 'B', userAddress, badgeURIs, inkspireURIs, seenNames);
-  await scanContract(inkspireInst, range(1, 100), 'INKSPIRE', userAddress, badgeURIs, inkspireURIs, seenNames);
-
-  badge5 = inkspireURIs.length > 0;
-  const ogBadge = await checkOGBadge(userAddress, contractOGInst);
-    } catch {}
-    updateProgressBar(index + 1, tokenIds.length);
-  });
-  await Promise.all(promises);
-}
-      }
-
-      async function checkOGBadge() {
-        for (let i = 0; i < 100; i++) {
+      async function scanContract(contract, tokenIds, label) {
+        for (let tokenId of tokenIds) {
           try {
-            const balance = await contractOGInst.methods.balanceOf(userAddress, i).call();
-            if (balance > 0) return true;
+            const owner = await contract.ownerOf(tokenId);
+            if (owner.toLowerCase() === userAddress.toLowerCase()) {
+              const uri = resolveIPFS(await contract.tokenURI(tokenId));
+              const metadata = await fetch(uri).then(r => r.json());
+              if (seenNames.has(metadata.name)) continue;
+              seenNames.add(metadata.name);
+              const image = resolveIPFS(metadata.image);
+              const target = label === 'INKSPIRE' ? inkspireURIs : badgeURIs;
+              target.push({ src: image, name: metadata.name });
+              if (metadata.name.includes("Let's Ape")) badge2 = true;
+              if (metadata.name.includes("$HOES Anthem")) badge3 = true;
+              if (!badge1 && label === 'A') badge1 = true;
+            }
           } catch {}
         }
-        return false;
       }
 
-      await scanContract(contractAInst, range(1, 69), 'A');
-      await scanContract(contractBInst, range(1, 420), 'B');
-      await scanContract(contractBInst, range(2800, 4000), 'B');
-      await scanContract(inkspireInst, range(1, 100), 'INKSPIRE');
+      await scanContract(contractAInstance, range(1, 69), 'A');
+      await scanContract(contractBInstance, range(1, 420), 'B');
+      await scanContract(contractBInstance, range(2800, 4000), 'B');
+      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
+      if (inkspireURIs.length > 0) badge5 = true;
 
-      badge5 = inkspireURIs.length > 0;
-      const ogBadge = await checkOGBadge();
+      const ogBadgeUnlocked = await checkOGBadge(userAddress, contractOGInstance);
 
-      document.getElementById("badgeOneStatus").innerHTML = badge1 ? "✅ <span class='unlocked'>Royalty Music Pass Unlock</span>" : "🔒 <span class='locked'>Badge 1 Locked</span>";
-      document.getElementById("badgeTwoStatus").innerHTML = badge2 ? "✅ <span class='unlocked'>Badge 2 Unlocked (\"Let's Ape\")</span>" : "🔒 <span class='locked'>Badge 2 Locked</span>";
-      document.getElementById("badgeThreeStatus").innerHTML = badge3 ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>" : "🔒 <span class='locked'>Badge 3 Locked</span>";
-      document.getElementById("badgeFourStatus").innerHTML = ogBadge ? "✅ <span class='unlocked'>OG Supporter</span>" : "🔒 <span class='locked'>Badge 4 Locked</span>";
-      document.getElementById("badgeFiveStatus").innerHTML = badge5 ? "✅ <span class='unlocked'>DripHeadz</span>" : "🔒 <span class='locked'>Dripheadz NFT Not Found</span>";
+      const statusEl = document.getElementById("badgeStatusContainer");
+      statusEl.innerHTML = `
+        <div>${badge1 ? '✅ Royalty Pass' : '🔒 Badge 1 Locked'}</div>
+        <div>${badge2 ? '✅ Badge 2: Let\'s Ape' : '🔒 Badge 2 Locked'}</div>
+        <div>${badge3 ? '✅ Badge 3: $HOES Anthem' : '🔒 Badge 3 Locked'}</div>
+        <div>${ogBadgeUnlocked ? '✅ OG Supporter' : '🔒 Badge 4 Locked'}</div>
+        <div>${badge5 ? '✅ Dripheadz Found' : '🔒 Badge 5 Locked'}</div>
+      `;
 
-      if (badge1) {
-        const video = document.createElement("video");
-        video.src = "royaltypass.MP4";
-        video.autoplay = video.loop = video.muted = true;
-        video.playsInline = true;
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        slot.appendChild(video);
-        badgeGrid.appendChild(slot);
-      }
-
-      badgeURIs.forEach(item => {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
+      for (const item of badgeURIs) {
         const img = document.createElement("img");
         img.src = item.src;
         img.alt = item.name;
-        slot.appendChild(img);
-        badgeGrid.appendChild(slot);
-      });
-
-      if (ogBadge) {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        const img = document.createElement("img");
-        img.src = "apestrong.jpg";
-        img.alt = "OG Badge";
-        slot.appendChild(img);
-        badgeGrid.appendChild(slot);
+        img.title = item.name;
+        const div = document.createElement("div");
+        div.className = "badge-slot";
+        div.appendChild(img);
+        badgeGrid.appendChild(div);
       }
 
-      const totalSlots = 6;
-      const current = badgeGrid.querySelectorAll(".badge-slot").length;
-      for (let i = current; i < totalSlots; i++) {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        slot.innerText = "Empty Record Slot";
-        badgeGrid.appendChild(slot);
-      }
-
-      inkspireURIs.forEach(item => {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
+      for (const item of inkspireURIs) {
         const img = document.createElement("img");
         img.src = item.src;
         img.alt = item.name;
-        slot.appendChild(img);
-        inkspireGrid.appendChild(slot);
-      });
-
-      clearInterval(intervalId);
-      document.getElementById("loadingIndicator").style.display = "none";
+        img.title = item.name;
+        const div = document.createElement("div");
+        div.className = "badge-slot";
+        div.appendChild(img);
+        inkspireGrid.appendChild(div);
+      }
     }
+
+    async function checkOGBadge(userAddress, contractOGInstance) {
+      for (let tokenId = 0; tokenId < 100; tokenId++) {
+        const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
+        if (balance.gt(0)) return true;
+      }
+      return false;
+    }
+
+    function logout() {
+      if (walletConnectProvider && walletConnectProvider.disconnect) {
+        walletConnectProvider.disconnect();
+      }
+      location.reload();
+    }
+
+    document.getElementById("loginMetaMask").addEventListener("click", connectMetaMask);
+    document.getElementById("loginWalletConnect").addEventListener("click", connectWalletConnect);
   </script>
 </body>
 </html>
+
 
 
 
