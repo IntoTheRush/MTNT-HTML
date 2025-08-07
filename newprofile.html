@@ -274,6 +274,14 @@ async function connect() {
   badge1 = false, badge2 = false, badge3 = false, badge5 = false;
   const seenNames = new Set();
   const badgeURIs = [], inkspireURIs = [];
+
+  await scanContract(contractAInst, range(1, 69), 'A', userAddress, badgeURIs, inkspireURIs, seenNames);
+  await scanContract(contractBInst, range(1, 420), 'B', userAddress, badgeURIs, inkspireURIs, seenNames);
+  await scanContract(contractBInst, range(2800, 4000), 'B', userAddress, badgeURIs, inkspireURIs, seenNames);
+  await scanContract(inkspireInst, range(1, 100), 'INKSPIRE', userAddress, badgeURIs, inkspireURIs, seenNames);
+
+  badge5 = inkspireURIs.length > 0;
+  const ogBadge = await checkOGBadge(userAddress, contractOGInst);
     } catch {}
     updateProgressBar(index + 1, tokenIds.length);
   });
@@ -361,6 +369,7 @@ async function connect() {
   </script>
 </body>
 </html>
+
 
 
 
