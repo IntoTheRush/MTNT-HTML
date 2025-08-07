@@ -151,18 +151,23 @@
   </div>
 
   <script>
-    const projectId = "YOUR_WEB3MODAL_PROJECT_ID";
+    const projectId = "b067bce56e4daea9a99d9e8fab184618";
 
-const ethereumClient = new window.ethereum.EthereumClient({
-  projectId,
-  chains: [{
-    chainId: 33139,
-    name: 'ApeChain',
-    rpcUrl: 'https://apechain.drpc.org'
-  }]
+const { EthereumClient, w3mProvider } = window.WalletConnectEthereumProvider;
+const { Web3Modal } = window.WalletConnectModal;
+
+const chains = [{
+  chainId: 33139,
+  name: 'ApeChain',
+  rpcUrls: ['https://apechain.drpc.org']
+}];
+
+const ethereumClient = new EthereumClient({
+  chains,
+  provider: w3mProvider({ chains, projectId })
 });
 
-const web3modal = new window.wallet.Web3Modal({
+const web3modal = new Web3Modal({
   projectId,
   themeMode: "dark",
   themeVariables: {
@@ -386,8 +391,6 @@ async function loadBadges(provider, userAddress) {
     inkspireGrid.appendChild(slot);
   });
 }
-
-
 
 
 
