@@ -215,9 +215,17 @@ async function connect(type) {
     await provider.send("eth_requestAccounts", []);
     await switchToApeChain(provider);
   } else if (type === 'web3modal') {
-    const externalProvider = await web3modal.openModal();
-    if (!externalProvider) return alert("No provider returned from Web3Modal.");
-    provider = new ethers.providers.Web3Provider(externalProvider);
+    await web3modal.openModal();
+    await new Promise(resolve => {
+      const checkProvider = setInterval(() => {
+        const wcProvider = window.ethereum;
+        if (wcProvider && wcProvider.selectedAddress) {
+          clearInterval(checkProvider);
+          provider = new ethers.providers.Web3Provider(wcProvider);
+          resolve();
+        }
+      }, 500);
+    });
   }
 
   const signer = provider.getSigner();
@@ -391,5 +399,6 @@ async function loadBadges(provider, userAddress) {
     inkspireGrid.appendChild(slot);
   });
 }
+
 
 
