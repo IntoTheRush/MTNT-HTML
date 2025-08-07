@@ -208,6 +208,7 @@ function range(start, end) {
 
 async function connect(type) {
   let provider;
+
   if (type === 'metamask') {
     if (!window.ethereum) return alert("Please install MetaMask!");
     provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -224,7 +225,38 @@ async function connect(type) {
       });
     });
     provider = new ethers.providers.Web3Provider(window.ethereum);
-        }
+  }
+
+  const signer = provider.getSigner();
+  const userAddress = await signer.getAddress();
+  await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
+
+  document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("profileSection").style.display = "block";
+
+  const loadingText = document.getElementById("loadingText");
+  const messages = [
+    "🧠 Scanning ApeChain...",
+    "🎷 Looking for music in the blockchain...",
+    "🙏 Checking the church...",
+    "🦍 Ape monks decoding grooves...",
+    "🎶 Tuning vinyl in hyperspace...",
+    "🍌 Spinning bananas into beats...",
+    "🔊 Listening for lost records...",
+    "🧬 Synthesizing rare sounds..."
+  ];
+  let index = 0;
+  const interval = setInterval(() => {
+    loadingText.innerText = messages[index % messages.length];
+    index++;
+  }, 2000);
+
+  await loadBadges(provider, userAddress);
+
+  clearInterval(interval);
+  document.getElementById("loadingIndicator").style.display = "none";
+}
       }, 500);
     });
   }
@@ -400,6 +432,7 @@ async function loadBadges(provider, userAddress) {
     inkspireGrid.appendChild(slot);
   });
 }
+
 
 
 
