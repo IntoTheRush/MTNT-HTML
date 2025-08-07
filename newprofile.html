@@ -167,14 +167,14 @@
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "33139" }] // 33139
+          params: [{ chainId: "0x8183" }] // 33139
         });
       } catch (err) {
         if (err.code === 4902) {
           await window.ethereum.request({
             method: "wallet_addEthereumChain",
             params: [{
-              chainId: "33139",
+              chainId: "0x8183",
               chainName: "ApeChain",
               nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
               rpcUrls: ["https://apechain.drpc.org"],
@@ -238,25 +238,29 @@
       const badgeURIs = [], inkspireURIs = [];
 
       async function scanContract(contract, tokenIds, label) {
-        let processed = 0;
-        for (let id of tokenIds) {
-          try {
-            const owner = await contract.methods.ownerOf(id).call();
-            if (owner.toLowerCase() === userAddress.toLowerCase()) {
-              const uri = resolveIPFS(await contract.methods.tokenURI(id).call());
-              const metadata = await fetch(uri).then(res => res.json());
-              if (seenNames.has(metadata.name)) continue;
-              seenNames.add(metadata.name);
-              const image = resolveIPFS(metadata.image);
-              (label === 'INKSPIRE' ? inkspireURIs : badgeURIs).push({ src: image, name: metadata.name });
-              if (metadata.name.includes("Let's Ape")) badge2 = true;
-              if (metadata.name.includes("$HOES Anthem")) badge3 = true;
-              if (!badge1 && label === 'A') badge1 = true;
-            }
-          } catch {}
-          processed++;
-          updateProgressBar(processed, tokenIds.length);
+  const promises = tokenIds.map(async (id, index) => {
+    try {
+      const owner = await contract.methods.ownerOf(id).call();
+      if (owner.toLowerCase() === userAddress.toLowerCase()) {
+        const uri = resolveIPFS(await contract.methods.tokenURI(id).call());
+        const metadata = await fetch(uri).then(res => res.json());
+        if (seenNames.has(metadata.name)) return;
+        seenNames.add(metadata.name);
+        const image = resolveIPFS(metadata.image);
+        if (label !== 'INKSPIRE') {
+          badgeURIs.push({ src: image, name: metadata.name });
+          if (metadata.name.includes("Let's Ape")) badge2 = true;
+          if (metadata.name.includes("$HOES Anthem")) badge3 = true;
+          if (!badge1 && label === 'A') badge1 = true;
+        } else {
+          inkspireURIs.push({ src: image, name: metadata.name });
         }
+      }
+    } catch {}
+    updateProgressBar(index + 1, tokenIds.length);
+  });
+  await Promise.all(promises);
+}
       }
 
       async function checkOGBadge() {
