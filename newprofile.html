@@ -257,40 +257,7 @@ async function connect(type) {
   clearInterval(interval);
   document.getElementById("loadingIndicator").style.display = "none";
 }
-      }, 500);
-    });
-  }
 
-  const signer = provider.getSigner();
-  const userAddress = await signer.getAddress();
-  await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
-
-  document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
-  document.getElementById("loginSection").style.display = "none";
-  document.getElementById("profileSection").style.display = "block";
-
-  const loadingText = document.getElementById("loadingText");
-  const messages = [
-    "🧠 Scanning ApeChain...",
-    "🎷 Looking for music in the blockchain...",
-    "🙏 Checking the church...",
-    "🦍 Ape monks decoding grooves...",
-    "🎶 Tuning vinyl in hyperspace...",
-    "🍌 Spinning bananas into beats...",
-    "🔊 Listening for lost records...",
-    "🧬 Synthesizing rare sounds..."
-  ];
-  let index = 0;
-  const interval = setInterval(() => {
-    loadingText.innerText = messages[index % messages.length];
-    index++;
-  }, 2000);
-
-  await loadBadges(provider, userAddress);
-
-  clearInterval(interval);
-  document.getElementById("loadingIndicator").style.display = "none";
-}
 
 async function switchToApeChain(provider) {
   const chainId = "0x8183";
@@ -432,6 +399,7 @@ async function loadBadges(provider, userAddress) {
     inkspireGrid.appendChild(slot);
   });
 }
+
 
 
 
