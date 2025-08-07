@@ -6,8 +6,7 @@
   <title>Mutant Records Collection</title>
 
   <!-- Web3Modal & Ethers -->
-  <script src="https://unpkg.com/@walletconnect/modal@2.8.0/dist/index.umd.js"></script>
-<script src="https://unpkg.com/@walletconnect/ethereum-provider@2.8.0/dist/index.umd.js"></script>
+  <script src="https://unpkg.com/@web3modal/html@2.8.0/dist/web3modal.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
   <style>
@@ -153,8 +152,8 @@
   <script>
     const projectId = "b067bce56e4daea9a99d9e8fab184618";
 
-const { EthereumClient, w3mProvider } = window.WalletConnectEthereumProvider;
-const { Web3Modal } = window.WalletConnectModal;
+const { EthereumClient, w3mConnectors, w3mProvider } = window.Web3Modal;
+const { Web3Modal } = window.Web3Modal;
 
 const chains = [{
   chainId: 33139,
@@ -217,12 +216,14 @@ async function connect(type) {
   } else if (type === 'web3modal') {
     await web3modal.openModal();
     await new Promise(resolve => {
-      const checkProvider = setInterval(() => {
-        const wcProvider = window.ethereum;
-        if (wcProvider && wcProvider.selectedAddress) {
-          clearInterval(checkProvider);
-          provider = new ethers.providers.Web3Provider(wcProvider);
+      const unsubscribe = ethereumClient.watchAccount((account) => {
+        if (account && account.address) {
+          unsubscribe();
           resolve();
+        }
+      });
+    });
+    provider = new ethers.providers.Web3Provider(window.ethereum);
         }
       }, 500);
     });
