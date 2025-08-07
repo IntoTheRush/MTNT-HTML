@@ -160,7 +160,16 @@
     ];
 
     const contractABI1155 = [
-      { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
+      {
+        "inputs": [
+          { "internalType": "address", "name": "account", "type": "address" },
+          { "internalType": "uint256", "name": "id", "type": "uint256" }
+        ],
+        "name": "balanceOf",
+        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+        "stateMutability": "view",
+        "type": "function"
+      }
     ];
 
     const apechainParams = {
@@ -364,6 +373,8 @@
         return false;
       } catch (err) {
         console.warn("Error checking OG badge:", err);
+        document.getElementById("badgeFourStatus").innerHTML =
+          "❌ <span class='locked'>Error checking OG badge</span>";
         return false;
       }
     }
@@ -375,6 +386,7 @@
   </script>
 </body>
 </html>
+
 
 
 
