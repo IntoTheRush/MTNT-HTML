@@ -222,25 +222,58 @@ async function checkOGBadge(userAddress, contractOGInst) {
   return false;
 }
 
-async function connect() {(contract, tokenIds, label) {
-  const promises = tokenIds.map(async (id, index) => {
-    try {
-      const owner = await contract.methods.ownerOf(id).call();
-      if (owner.toLowerCase() === userAddress.toLowerCase()) {
-        const uri = resolveIPFS(await contract.methods.tokenURI(id).call());
-        const metadata = await fetch(uri).then(res => res.json());
-        if (seenNames.has(metadata.name)) return;
-        seenNames.add(metadata.name);
-        const image = resolveIPFS(metadata.image);
-        if (label !== 'INKSPIRE') {
-          badgeURIs.push({ src: image, name: metadata.name });
-          if (metadata.name.includes("Let's Ape")) badge2 = true;
-          if (metadata.name.includes("$HOES Anthem")) badge3 = true;
-          if (!badge1 && label === 'A') badge1 = true;
-        } else {
-          inkspireURIs.push({ src: image, name: metadata.name });
-        }
-      }
+async function connect() {
+  if (!window.ethereum) return alert("Please install MetaMask!");
+
+  const web3 = new Web3(window.ethereum);
+  await window.ethereum.request({ method: 'eth_requestAccounts' });
+  await switchToApeChain();
+
+  const accounts = await web3.eth.getAccounts();
+  const userAddress = accounts[0];
+
+  const message = "Sign this message to confirm your wallet for Mutant Records.";
+  try {
+    await web3.eth.personal.sign(message, userAddress);
+  } catch (err) {
+    alert("Signature declined. Wallet not connected.");
+    return;
+  }
+
+  document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("profileSection").style.display = "block";
+  document.getElementById("loadingIndicator").style.display = "block";
+
+  startLoadingAnimation();
+
+  const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
+  const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
+  const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
+  const inkspireContract = "0x00d48b06b39f76e45966ff11b318059620ac470b";
+
+  const contractABI721 = [
+    { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
+    { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "tokenURI", "outputs": [{ "name": "uri", "type": "string" }], "type": "function" }
+  ];
+
+  const contractABI1155 = [
+    { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
+  ];
+
+  const badgeGrid = document.getElementById("badgeGrid");
+  const inkspireGrid = document.getElementById("inkspireGrid");
+  badgeGrid.innerHTML = "";
+  inkspireGrid.innerHTML = "";
+
+  const contractAInst = new web3.eth.Contract(contractABI721, contractA);
+  const contractBInst = new web3.eth.Contract(contractABI721, contractB);
+  const contractOGInst = new web3.eth.Contract(contractABI1155, contractOG);
+  const inkspireInst = new web3.eth.Contract(contractABI721, inkspireContract);
+
+  badge1 = false, badge2 = false, badge3 = false, badge5 = false;
+  const seenNames = new Set();
+  const badgeURIs = [], inkspireURIs = [];
     } catch {}
     updateProgressBar(index + 1, tokenIds.length);
   });
