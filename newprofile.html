@@ -6,7 +6,6 @@
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
-    /* [Same styles as you provided — omitted for brevity in this section] */
     body {
       background: url('background.png') center center / cover no-repeat;
       background-attachment: fixed;
@@ -15,26 +14,17 @@
       margin: 0;
       padding: 20px;
     }
-
-    header {
-      background: url('background.png') center center / cover no-repeat;
-      height: 200px;
-      margin-bottom: 20px;
-    }
-
     .badge-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
       gap: 20px;
       margin-top: 20px;
     }
-
     @media (max-width: 600px) {
       .badge-grid {
         grid-template-columns: repeat(3, 1fr);
       }
     }
-
     .badge-slot {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -46,47 +36,34 @@
       background-color: #000;
       color: #fff;
     }
-
     .badge-slot img,
     .badge-slot video {
       max-width: 100%;
       max-height: 100%;
     }
-
     #loadingIndicator {
       font-size: 18px;
       color: #fff;
       margin-top: 20px;
     }
-
     #progressBar {
       width: 100%;
       background-color: #333;
       margin-top: 10px;
       border: 1px solid #fff;
     }
-
     #progressBarFill {
       height: 20px;
       width: 0%;
-      background-color: #00ffff !important;
+      background-color: #00ffff;
       transition: width 0.3s;
     }
-
     .badge-status {
       margin: 6px 0;
       font-weight: bold;
-      color: #fff;
     }
-
-    .unlocked {
-      color: #0f0;
-    }
-
-    .locked {
-      color: #f00;
-    }
-
+    .unlocked { color: #0f0; }
+    .locked { color: #f00; }
     button {
       background-color: #222;
       color: #fff;
@@ -95,11 +72,9 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #444;
     }
-
     #exitButton {
       display: inline-block;
       background-color: #222;
@@ -111,7 +86,6 @@
       cursor: pointer;
       margin-bottom: 20px;
     }
-
     #exitButton:hover {
       background-color: #444;
     }
@@ -119,26 +93,21 @@
 </head>
 <body>
   <a href="index.html" id="exitButton">Exit</a>
-
   <div id="loginSection">
-    <h1>Collectors Book</h1>
+    <h1>Connect Wallet</h1>
     <button id="loginButton">Login with MetaMask</button>
   </div>
-
   <div id="profileSection" style="display:none;">
-    <h2>Mutant Records collectibles by</h2>
+    <h2>Mutant Records collection by</h2>
     <p id="walletAddress"></p>
     <button onclick="logout()">Logout</button>
-
     <div id="badgeOneStatus" class="badge-status"></div>
     <div id="badgeTwoStatus" class="badge-status"></div>
     <div id="badgeThreeStatus" class="badge-status"></div>
     <div id="badgeFourStatus" class="badge-status"></div>
-    <div id="badgeFiveStatus" class="badge-status"></div>
     <div id="loadingIndicator"><span id="loadingText">Loading your records...</span></div>
     <div id="progressBar"><div id="progressBarFill"></div></div>
-
-    <h3>Mutant Records collectibles</h3>
+    <h3>Your Records</h3>
     <div class="badge-grid" id="badgeGrid"></div>
   </div>
 
@@ -146,7 +115,6 @@
     const contractA = "0xed10cd2183de930c70c812d237d5ee763a9bbc52";
     const contractB = "0xdfa50db2aa335e8ccd0671ca11abce7938a3ec09";
     const contractOG = "0xbbe59d056e8a1ce9acc0b83574075f41d0aeca07";
-    const inkspireContractAddress = "0x00d48b06b39f76e45966ff11b318059620ac470b";
 
     const contractABI721 = [
       { "constant": true, "inputs": [{ "name": "tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "owner", "type": "address" }], "type": "function" },
@@ -158,50 +126,40 @@
     ];
 
     const apechainParams = {
-      chainId: "0x8163", // 33139 in hex
+      chainId: "0x8183",
       chainName: "ApeChain",
       nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
       blockExplorerUrls: ["https://apescan.io"]
     };
 
-    function range(start, end) {
-      return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-    }
-
     function resolveIPFS(uri) {
-      if (!uri.startsWith("ipfs://")) return uri;
-      return "https://ipfs.io/ipfs/" + uri.slice(7);
+      return uri.startsWith("ipfs://") ? "https://ipfs.io/ipfs/" + uri.slice(7) : uri;
     }
 
-    async function switchToApeChain(provider) {
-      try {
-        await provider.send("wallet_switchEthereumChain", [{ chainId: apechainParams.chainId }]);
-      } catch (err) {
-        if (err.code === 4902) {
-          await provider.send("wallet_addEthereumChain", [apechainParams]);
-        } else {
-          alert("Failed to switch to ApeChain");
+    async function checkOGBadgeLoop(userAddress, contractOGInstance) {
+      for (let tokenId = 0; tokenId < 100; tokenId++) {
+        const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
+        if (balance.gt(0)) {
+          document.getElementById("badgeFourStatus").innerHTML = "✅ <span class='unlocked'>OG Supporter</span>";
+          return true;
         }
       }
+      document.getElementById("badgeFourStatus").innerHTML = "🔒 <span class='locked'>Badge 4 Locked</span>";
+      return false;
     }
 
     async function connectWallet() {
-      if (!window.ethereum) return alert("Please install MetaMask!");
-
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
-      await switchToApeChain(provider);
-
+      await provider.send("wallet_switchEthereumChain", [{ chainId: apechainParams.chainId }]);
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
-
       await signer.signMessage("Sign this message to confirm your wallet for Mutant Records.");
-      document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
 
+      document.getElementById("walletAddress").innerText = "Wallet: " + userAddress;
       document.getElementById("loginSection").style.display = "none";
       document.getElementById("profileSection").style.display = "block";
-      document.getElementById("loadingIndicator").style.display = "block";
 
       const loadingMessages = [
         "🧠 Scanning ApeChain...",
@@ -220,65 +178,53 @@
         messageIndex++;
       }, 2000);
 
-      const badgeGrid = document.getElementById("badgeGrid");
-      badgeGrid.innerHTML = "";
-
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
       const contractOGInstance = new ethers.Contract(contractOG, contractABI1155, provider);
-      const inkspireInstance = new ethers.Contract(inkspireContractAddress, contractABI721, provider);
 
-      let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
+      let badge1 = false, badge2 = false, badge3 = false;
       const seenNames = new Set();
       const badgeURIs = [];
+      let processed = 0;
+      const total = 13; // 6 A tokens + 7 B tokens
 
-      async function scanContract(contract, tokenIds, contractLabel) {
-        let processed = 0;
-        const total = tokenIds.length;
+      function updateProgressBar() {
+        const percent = Math.round((processed / total) * 100);
+        document.getElementById("progressBarFill").style.width = percent + "%";
+      }
 
-        const updateProgress = () => {
-          const percent = Math.round((processed / total) * 100);
-          document.getElementById("progressBarFill").style.width = percent + "%";
-        };
-
-        await Promise.all(tokenIds.map(async (tokenId) => {
+      async function scanContract(contract, tokenIds, label) {
+        for (const tokenId of tokenIds) {
           try {
             const owner = await contract.ownerOf(tokenId);
             if (owner.toLowerCase() === userAddress.toLowerCase()) {
-              const uriRaw = await contract.tokenURI(tokenId);
-              const uri = resolveIPFS(uriRaw);
-              const response = await fetch(uri);
-              if (!response.ok) return;
-              const metadata = await response.json();
-              if (seenNames.has(metadata.name)) return;
-              seenNames.add(metadata.name);
-              const image = resolveIPFS(metadata.image);
-              badgeURIs.push({ src: image, name: metadata.name });
-
-              if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
-              if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
-              if (!badge1 && contractLabel === 'A') badge1 = true;
+              const uri = resolveIPFS(await contract.tokenURI(tokenId));
+              const meta = await (await fetch(uri)).json();
+              if (seenNames.has(meta.name)) continue;
+              seenNames.add(meta.name);
+              badgeURIs.push({ src: resolveIPFS(meta.image), name: meta.name });
+              if (meta.name.includes("$HOES Anthem")) badge3 = true;
+              if (meta.name.includes("Let's Ape")) badge2 = true;
+              if (!badge1 && label === 'A') badge1 = true;
             }
-          } catch (_) {} finally { processed++; updateProgress(); }
-        }));
+          } catch (e) { console.warn(`Token ${tokenId} skipped`, e); }
+          processed++;
+          updateProgressBar();
+        }
       }
 
-      // Scans
-      await scanContract(contractAInstance, range(1, 69), 'A');
-      await scanContract(contractBInstance, range(1, 420), 'B');
-      await scanContract(contractBInstance, range(2800, 4000), 'B');
+      await scanContract(contractAInstance, [1, 2, 3, 5, 10, 15], 'A');
+      await scanContract(contractBInstance, [5, 22, 44, 69, 88, 111, 3377], 'B');
 
-      // INKSPIRE SCAN
-      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
-      if (badgeURIs.some(b => b.name.toLowerCase().includes("inkspire"))) badge5 = true;
+      const ogUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
 
-      const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
-      let ogBadgeInserted = false;
+      const badgeGrid = document.getElementById("badgeGrid");
+      badgeGrid.innerHTML = "";
+      let ogPlaced = false;
 
       for (let i = 0; i < 10; i++) {
         const slot = document.createElement("div");
         slot.className = "badge-slot";
-
         if (i === 0 && badge1) {
           const video = document.createElement("video");
           video.src = "royaltypass.MP4";
@@ -291,18 +237,17 @@
           const img = document.createElement("img");
           img.src = badgeURIs[i].src;
           img.alt = badgeURIs[i].name || "NFT Image";
-          slot.title = badgeURIs[i].name || "NFT";
+          img.title = badgeURIs[i].name || "NFT";
           slot.appendChild(img);
-        } else if (ogBadgeUnlocked && !ogBadgeInserted) {
+        } else if (ogUnlocked && !ogPlaced) {
           const img = document.createElement("img");
           img.src = "apestrong.jpg";
           img.alt = "OG Holder Badge";
           slot.appendChild(img);
-          ogBadgeInserted = true;
+          ogPlaced = true;
         } else {
           slot.innerText = "Empty Record Slot";
         }
-
         badgeGrid.appendChild(slot);
       }
 
@@ -312,47 +257,23 @@
       document.getElementById("badgeOneStatus").innerHTML = badge1
         ? "✅ <span class='unlocked'>Royalty Music Pass Unlock</span>"
         : "🔒 <span class='locked'>Badge 1 Locked</span>";
-
       document.getElementById("badgeTwoStatus").innerHTML = badge2
         ? "✅ <span class='unlocked'>Badge 2 Unlocked (\"Let's Ape\")</span>"
         : "🔒 <span class='locked'>Badge 2 Locked</span>";
-
       document.getElementById("badgeThreeStatus").innerHTML = badge3
         ? "✅ <span class='unlocked'>Badge 3 Unlocked (\"$HOES Anthem\")</span>"
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
-
-      document.getElementById("badgeFiveStatus").innerHTML = badge5
-        ? "✅ <span class='unlocked'>INKSPIRE1 NFT Owned</span>"
-        : "🔒 <span class='locked'>INKSPIRE1 NFT Not Found</span>";
     }
-
-    async function checkOGBadgeLoop(userAddress, contractOGInstance) {
-      try {
-        for (let tokenId = 0; tokenId < 100; tokenId++) {
-          const balance = await contractOGInstance.balanceOf(userAddress, tokenId);
-          if (balance.gt(0)) {
-            document.getElementById("badgeFourStatus").innerHTML =
-              "✅ <span class='unlocked'>OG Supporter</span>";
-            return true;
-          }
-        }
-        document.getElementById("badgeFourStatus").innerHTML =
-          "🔒 <span class='locked'>Badge 4 Locked</span>";
-        return false;
-      } catch (err) {
-        console.warn("Error checking OG badge:", err);
-        return false;
-      }
-    }
-
-    document.getElementById("loginButton").addEventListener("click", connectWallet);
 
     function logout() {
       location.reload();
     }
+
+    document.getElementById("loginButton").onclick = connectWallet;
   </script>
 </body>
 </html>
+
 
 
 
