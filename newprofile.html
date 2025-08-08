@@ -6,6 +6,7 @@
   <title>Mutant Records Collection</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
+    /* [Same styles as you provided — omitted for brevity in this section] */
     body {
       background: url('background.png') center center / cover no-repeat;
       background-attachment: fixed;
@@ -44,10 +45,6 @@
       font-size: 18px;
       background-color: #000;
       color: #fff;
-    }
-
-    .badge-slot.empty {
-      display: none;
     }
 
     .badge-slot img,
@@ -143,9 +140,6 @@
 
     <h3>Mutant Records collectibles</h3>
     <div class="badge-grid" id="badgeGrid"></div>
-
-    <h3>DripHeadz Music</h3>
-    <div class="badge-grid" id="inkspireGrid"></div>
   </div>
 
   <script>
@@ -160,20 +154,11 @@
     ];
 
     const contractABI1155 = [
-      {
-        "inputs": [
-          { "internalType": "address", "name": "account", "type": "address" },
-          { "internalType": "uint256", "name": "id", "type": "uint256" }
-        ],
-        "name": "balanceOf",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-      }
+      { "constant": true, "inputs": [{ "name": "account", "type": "address" }, { "name": "id", "type": "uint256" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "type": "function" }
     ];
 
     const apechainParams = {
-      chainId: "33139",
+      chainId: "0x8163", // 33139 in hex
       chainName: "ApeChain",
       nativeCurrency: { name: "APE", symbol: "APE", decimals: 18 },
       rpcUrls: ["https://apechain.drpc.org"],
@@ -220,7 +205,7 @@
 
       const loadingMessages = [
         "🧠 Scanning ApeChain...",
-        "🎷 Looking for music in the blockchain...",
+        "🎧 Looking for music in the blockchain...",
         "🙏 Checking the church...",
         "🦍 Ape monks decoding grooves...",
         "🎶 Tuning vinyl in hyperspace...",
@@ -236,9 +221,7 @@
       }, 2000);
 
       const badgeGrid = document.getElementById("badgeGrid");
-      const inkspireGrid = document.getElementById("inkspireGrid");
       badgeGrid.innerHTML = "";
-      inkspireGrid.innerHTML = "";
 
       const contractAInstance = new ethers.Contract(contractA, contractABI721, provider);
       const contractBInstance = new ethers.Contract(contractB, contractABI721, provider);
@@ -248,7 +231,6 @@
       let badge1 = false, badge2 = false, badge3 = false, badge5 = false;
       const seenNames = new Set();
       const badgeURIs = [];
-      const inkspireURIs = [];
 
       async function scanContract(contract, tokenIds, contractLabel) {
         let processed = 0;
@@ -271,12 +253,7 @@
               if (seenNames.has(metadata.name)) return;
               seenNames.add(metadata.name);
               const image = resolveIPFS(metadata.image);
-
-              if (contractLabel === 'INKSPIRE') {
-                inkspireURIs.push({ src: image, name: metadata.name });
-              } else {
-                badgeURIs.push({ src: image, name: metadata.name });
-              }
+              badgeURIs.push({ src: image, name: metadata.name });
 
               if (metadata.name === "NaNa The Ape, Rick Starr - $HOES Anthem") badge3 = true;
               if (metadata.name === "NaNe The Ape & Rick Starr - Let's Ape") badge2 = true;
@@ -286,12 +263,14 @@
         }));
       }
 
+      // Scans
       await scanContract(contractAInstance, range(1, 69), 'A');
       await scanContract(contractBInstance, range(1, 420), 'B');
       await scanContract(contractBInstance, range(2800, 4000), 'B');
-      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
 
-      if (inkspireURIs.length > 0) badge5 = true;
+      // INKSPIRE SCAN
+      await scanContract(inkspireInstance, range(1, 100), 'INKSPIRE');
+      if (badgeURIs.some(b => b.name.toLowerCase().includes("inkspire"))) badge5 = true;
 
       const ogBadgeUnlocked = await checkOGBadgeLoop(userAddress, contractOGInstance);
       let ogBadgeInserted = false;
@@ -327,17 +306,6 @@
         badgeGrid.appendChild(slot);
       }
 
-      inkspireURIs.forEach((item) => {
-        const slot = document.createElement("div");
-        slot.className = "badge-slot";
-        const img = document.createElement("img");
-        img.src = item.src;
-        img.alt = item.name || "Inkspire NFT";
-        img.title = item.name || "Inkspire NFT";
-        slot.appendChild(img);
-        inkspireGrid.appendChild(slot);
-      });
-
       clearInterval(loadingInterval);
       document.getElementById("loadingIndicator").style.display = "none";
 
@@ -354,8 +322,8 @@
         : "🔒 <span class='locked'>Badge 3 Locked</span>";
 
       document.getElementById("badgeFiveStatus").innerHTML = badge5
-        ? "✅ <span class='unlocked'>DripHeadz</span>"
-        : "🔒 <span class='locked'>Dripheadz NFT Not Found</span>";
+        ? "✅ <span class='unlocked'>INKSPIRE1 NFT Owned</span>"
+        : "🔒 <span class='locked'>INKSPIRE1 NFT Not Found</span>";
     }
 
     async function checkOGBadgeLoop(userAddress, contractOGInstance) {
@@ -373,19 +341,19 @@
         return false;
       } catch (err) {
         console.warn("Error checking OG badge:", err);
-        document.getElementById("badgeFourStatus").innerHTML =
-          "❌ <span class='locked'>Error checking OG badge</span>";
         return false;
       }
     }
 
     document.getElementById("loginButton").addEventListener("click", connectWallet);
+
     function logout() {
       location.reload();
     }
   </script>
 </body>
 </html>
+
 
 
 
